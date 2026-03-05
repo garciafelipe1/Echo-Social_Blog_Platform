@@ -36,7 +36,11 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
   const [thumbnail, setThumbnail] = useState<ImageData | string | null>(null);
   const [hasChangesThumbnail, setHasChangesThumbnail] = useState<boolean>(false);
   const onLoadThumbnail = (newImage: ImageData) => {
-    if (newImage?.file !== thumbnail?.file) {
+    const currentFile =
+      thumbnail && typeof thumbnail === 'object' && 'file' in thumbnail
+        ? thumbnail.file
+        : undefined;
+    if (newImage?.file !== currentFile) {
       setThumbnail(newImage);
       setHasChangesThumbnail(true);
     }

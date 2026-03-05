@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { ReactElement } from 'react';
-import type { RootState } from '@/redux/store';
+import type { RootState } from '@/redux/reducers';
 
 import Layout from '@/hocs/Layout';
 import BlogPageHeader from '@/components/pages/blog/BlogPageHeader';

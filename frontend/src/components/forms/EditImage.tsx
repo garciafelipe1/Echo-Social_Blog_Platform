@@ -64,15 +64,17 @@ export default function EditImage({
     if (encoding === 'base64') {
       reader.readAsDataURL(acceptedFile);
       reader.onload = () => {
+        const result = reader.result;
+        if (typeof result !== 'string') return;
         const sizeInKB = acceptedFile.size / 1024;
         const fileTypeMapping: { [key: string]: string } = {
           'image/jpeg': '.jpg',
           'image/png': '.png',
         };
-        const newItem = {
+        const newItem: ImageData = {
           id: uuidv4(),
           title: acceptedFile.name,
-          file: reader.result,
+          file: result,
           size: `${sizeInKB.toFixed(2)} KB`,
           type: fileTypeMapping[acceptedFile.type] || acceptedFile.type,
           lastModified: acceptedFile.lastModified,
@@ -114,22 +116,24 @@ export default function EditImage({
     }
   };
 
-  const getSrcUrl = () => {
-    if (isValidUrl(data)) {
+  const getSrcUrl = (): string => {
+    if (typeof data === 'string' && isValidUrl(data)) {
       return data;
     }
 
-    if (encoding === 'base64' && data?.file) {
-      return data.file;
-    }
-
-    if (encoding === 'multipart' && data?.file) {
-      return URL.createObjectURL(data.file);
+    if (data && typeof data === 'object' && 'file' in data) {
+      if (encoding === 'base64' && typeof data.file === 'string') {
+        return data.file;
+      }
+      if (encoding === 'multipart' && data.file instanceof File) {
+        return URL.createObjectURL(data.file);
+      }
     }
 
     return PLACEHOLDER_IMAGE;
   };
   const srcUrl = getSrcUrl();
+  const imageData = data && typeof data === 'object' && 'file' in data ? data : null;
 
   const normalStyle = <div>Normal style</div>;
 
@@ -146,7 +150,7 @@ export default function EditImage({
               width={512}
               height={512}
               src={srcUrl}
-              alt={data?.title || ''}
+              alt={imageData?.title || ''}
               className={`h-48 w-auto object-cover ${variant === 'profile' ? 'rounded-full object-center' : ''}`}
             />
           )}
@@ -160,7 +164,9 @@ export default function EditImage({
               {...getRootProps()}
             >
               <input {...getInputProps()} />
-              <span>{data?.file ? data?.title : 'Drag and drop or click to upload file'}</span>
+              <span>
+                {imageData?.file ? imageData.title : 'Drag and drop or click to upload file'}
+              </span>
             </div>
           )}
         </ReactDropzone>
@@ -205,7 +211,9 @@ export default function EditImage({
                 {...getRootProps()}
               >
                 <input {...getInputProps()} />
-                <span>{data?.file ? data?.title : 'Drag and drop or click to upload file'}</span>
+                <span>
+                  {imageData?.file ? imageData.title : 'Drag and drop or click to upload file'}
+                </span>
               </div>
             )}
           </ReactDropzone>

@@ -21,7 +21,13 @@ const FIELDS = [
     placeholder: 'tu@email.com',
     autoComplete: 'email',
   },
-  { id: 'subject', label: 'Asunto', type: 'text', placeholder: '¿En qué podemos ayudarte?' },
+  {
+    id: 'subject',
+    label: 'Asunto',
+    type: 'text',
+    placeholder: '¿En qué podemos ayudarte?',
+    autoComplete: 'off',
+  },
 ] as const;
 
 function isFormValid(data: FormData): boolean {

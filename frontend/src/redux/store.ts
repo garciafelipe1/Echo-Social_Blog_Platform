@@ -10,7 +10,7 @@ const persistConfig = {
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer as import('redux').Reducer);
 
 const MakeStore = () => {
   const store = configureStore({
