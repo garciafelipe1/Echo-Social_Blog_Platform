@@ -1,0 +1,1 @@
+export { BlogApiAdapter } from './BlogApiAdapter';

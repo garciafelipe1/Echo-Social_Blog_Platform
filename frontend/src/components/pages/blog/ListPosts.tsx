@@ -1,6 +1,6 @@
 import { IPostsList } from "@/interfaces/blog/IPost"
 import ListPostCard from "./ListPostCard"
-import Button from "@/components/Buttom"
+import Button from "@/components/Button"
 import LoadingMoon from "@/components/loaders/LoadingMoon";
 import ListPostCardLoading from "@/components/loaders/ListPostCardLoading";
 

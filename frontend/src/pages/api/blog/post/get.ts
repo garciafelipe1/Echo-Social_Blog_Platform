@@ -1,33 +1,31 @@
+import parseCookies from '@/utils/cookies/parseCookies';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getBackendUrl } from '@/pages/api/_lib/backendFetch';
 
-type Data = {
-  name?: string;
-  error?: string;
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: `Method ${req.method} not allowed`,
-    });
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 
   const { slug } = req.query;
 
   try {
-    const apiRes = await fetch(`${process.env.API_URL}/api/blog/post/get/?slug=${slug}`, {
+    const baseUrl = getBackendUrl();
+    const cookies = parseCookies(req.headers.cookie || '');
+    const accessToken = cookies.access;
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (accessToken) {
+      headers['Authorization'] = `JWT ${accessToken}`;
+    }
+
+    const apiRes = await fetch(`${baseUrl}/api/blog/post/get/?slug=${slug}`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      
-      },
+      headers,
     });
 
     const data = await apiRes.json();
     return res.status(apiRes.status).json(data);
-  } catch (err) {
-    return res.status(500).json({
-      error: 'Something went wrong',
-    });
+  } catch {
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }

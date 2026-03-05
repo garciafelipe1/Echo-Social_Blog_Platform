@@ -1,0 +1,90 @@
+# Levanta frontend + backend + PostgreSQL + Redis + Mailpit con un solo comando:
+#   docker compose up -d
+# Frontend:  http://localhost:3006
+# Backend:   http://localhost:7000
+# Mailpit:   http://localhost:8025  (UI para ver emails)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fullstack_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: django_db
+      POSTGRES_USER: django
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U django -d django_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: fullstack_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: fullstack_mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: fullstack_backend
+    restart: unless-stopped
+    command: uvicorn core.asgi:application --host 0.0.0.0 --port 8004 --reload
+    volumes:
+      - ./backend:/app
+    ports:
+      - "7000:8004"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fullstack_frontend
+    restart: unless-stopped
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3006:3000"
+    env_file:
+      - .env
+    environment:
+      # Desde el contenedor, el backend se alcanza por el nombre del servicio
+      API_URL: http://backend:8004
+      # En el navegador (cliente) el backend se expone en el host
+      NEXT_PUBLIC_API_URL: http://localhost:7000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

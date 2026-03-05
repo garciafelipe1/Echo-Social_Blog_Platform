@@ -254,7 +254,6 @@ export const login =
         await dispatch(loadUser());
         await dispatch(loadProfile());
 
-        console.log('Login successfull.');
       } else {
         dispatch({
           type: LOGIN_FAIL,

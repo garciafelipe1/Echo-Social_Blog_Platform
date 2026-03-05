@@ -1,10 +1,11 @@
-import EditImage from '@/components/forms/EditImage';
+import EditImage, { ImageData } from '@/components/forms/EditImage';
 import EditRichText from '@/components/forms/EditRichText';
 import EditSelect from '@/components/forms/EditSelect';
 import EditText from '@/components/forms/EditText';
 import LoadingMoon from '@/components/loaders/LoadingMoon';
 import { ToastError, ToastSuccess } from '@/components/toast/toast';
 import usePostCategories from '@/hooks/usePostCategories';
+import { isRichTextEmpty } from '@/hooks/usePostForm';
 import { IPost } from '@/interfaces/blog/IPost';
 
 import fetchPost from '@/utils/api/blog/post/get';
@@ -32,13 +33,12 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
 
   const { categories, loading: loadingCategories } = usePostCategories();
 
-  const [thumbnail, setThumbnail] = useState<any>(null);
+  const [thumbnail, setThumbnail] = useState<ImageData | string | null>(null);
   const [hasChangesThumbnail, setHasChangesThumbnail] = useState<boolean>(false);
-  const onLoadThumbnail = (newImage: any) => {
+  const onLoadThumbnail = (newImage: ImageData) => {
     if (newImage?.file !== thumbnail?.file) {
       setThumbnail(newImage);
       setHasChangesThumbnail(true);
-      console.log('Actualización de profilePicture:', newImage);
     }
   };
 
@@ -52,11 +52,9 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
         ToastError(
           `Error al obtener la información del post con slug: ${slug}. Estado: ${res.status}`,
         );
-        console.error('Error al obtener el post:', res);
       }
-    } catch (error) {
+    } catch {
       ToastError(`Error inesperado al obtener la información del post con slug: ${slug}`);
-      console.error('Error inesperado al obtener el post:', error);
     } finally {
       setLoading(false);
     }
@@ -67,11 +65,6 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
       getPost();
     }
   }, [getPost, open]);
-
-  const isEmpty = (str: string) => {
-    const CleanedContent = str.replace(/<[^>]+>/g, '').trim();
-    return CleanedContent === '';
-  };
 
   useEffect(() => {
     if (post) {
@@ -87,23 +80,27 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
   }, [post]);
 
   const handleOnSubmit = async () => {
-    if (isEmpty(Content)) {
+    if (isRichTextEmpty(Content)) {
       ToastError('El contenido no puede estar vacío.');
-      return null;
+      return;
+    }
+    if (!category?.trim()) {
+      ToastError('Selecciona una categoría.');
+      return;
     }
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('post_slug', PostSlug); 
+      formData.append('post_slug', slug);
       formData.append('title', title);
       formData.append('description', Description);
       formData.append('content', Content);
       formData.append('keywords', Keywords);
-      formData.append('slug', slug);
+      formData.append('slug', PostSlug);
       formData.append('category', category);
       formData.append('status', status);
 
-      if (thumbnail?.file) {
+      if (thumbnail && typeof thumbnail === 'object' && 'file' in thumbnail && thumbnail.file && typeof thumbnail.file !== 'string') {
         formData.append(
           'thumbnail',
           thumbnail.file,
@@ -111,11 +108,6 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
         );
       }
       
-
-      // Para depuración: ver los datos que se envían
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}, ${pair[1]}`);
-      }
 
       const res = await fetch('/api/blog/post/update/', {
         method: 'PUT',
@@ -136,12 +128,10 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
         setThumbnail(null);
         setOpen(false);
       } else {
-        console.error('Error al actualizar el post:', data);
         ToastError(data.error || `Error al actualizar el post: ${res.statusText}`);
       }
-    } catch (error) {
+    } catch {
       ToastError('Ocurrió un error inesperado al actualizar el post.');
-      console.error('Error frontend al actualizar el post:', error);
     } finally {
       setLoading(false);
     }

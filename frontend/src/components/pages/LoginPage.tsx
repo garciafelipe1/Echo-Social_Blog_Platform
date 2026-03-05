@@ -1,4 +1,4 @@
-import Botton from '@/components/Buttom';
+import Button from '@/components/Button';
 import EditEmail from '@/components/forms/EditEmail';
 import EditPassword from '@/components/forms/EditPassword';
 
@@ -34,7 +34,7 @@ export default function Page() {
       setLoading(true);
       await dispatch(login(loginData));
     } catch (err) {
-      console.log(err);
+      // Error handled by Redux action
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function Page() {
       setLoading(true);
       await dispatch(refresh_access_token());
     } catch (err) {
-      console.log(err);
+      // Error handled by Redux action
     } finally {
       setLoading(false);
     }
@@ -80,16 +80,16 @@ export default function Page() {
             required
           />
           <EditPassword data={password} setData={setPassword} title="password" required />
-          <Botton disabled={loading} hoverEffect={!loading} type="submit">
+          <Button disabled={loading} hoverEffect={!loading} type="submit">
             {loading ? <LoadingMoon /> : 'login'}
-          </Botton>
+          </Button>
         </form>
-        {/* <Botton disabled={loading} hoverEffect={!loading} onClick={handleRefreshToken}>
+        {/* <Button disabled={loading} hoverEffect={!loading} onClick={handleRefreshToken}>
           test buttom
-        </Botton> */}
-        {/* <Botton disabled={loading} hoverEffect={!loading} onClick={handleVerifyToken}>
+        </Button> */}
+        {/* <Button disabled={loading} hoverEffect={!loading} onClick={handleVerifyToken}>
           verify token
-        </Botton> */}
+        </Button> */}
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">
           Do you not have an account? {''}

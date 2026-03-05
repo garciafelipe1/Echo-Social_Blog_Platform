@@ -71,21 +71,25 @@ class  PostViewSerializer(serializers.ModelSerializer):
         fields= "__all__"
         
 class PostSerializer(serializers.ModelSerializer):
-    category=CategorySerializer()
-    headings=HeadingSerializer(many=True)
-    view_count=serializers.SerializerMethodField()
-    has_liked=serializers.SerializerMethodField()
-    comments_count=serializers.SerializerMethodField()
-    likes_count=serializers.SerializerMethodField()
-    user=serializers.StringRelatedField()
+    category = CategorySerializer()
+    headings = HeadingSerializer(many=True)
+    view_count = serializers.SerializerMethodField()
+    has_liked = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    user = UserPublicSerializer(read_only=True)
     
     
     class Meta:
         model=Post
         fields= "__all__"
     
-    def get_view_count(self,obj):
-        return obj.post_analytics.views if obj.post_analytics else 0
+    def get_view_count(self, obj):
+        try:
+            analytics = obj.post_analytics
+            return analytics.impressions + analytics.views
+        except Exception:
+            return 0
     
     def get_comments_count(self,obj):
         return obj.post_comments.filter(parent=None,is_active=True).count()
@@ -102,15 +106,26 @@ class PostSerializer(serializers.ModelSerializer):
         return False
         
  
-class PostListSerializer(serializers.ModelSerializer):
-    category=CategorySerializer()
-    view_count=serializers.SerializerMethodField()
-    user=UserPublicSerializer()
-    
+class RecentCommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
-        model=Post
-        fields=[
+        model = Comment
+        fields = ['id', 'username', 'content', 'created_at']
+
+
+class PostListSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    view_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    has_liked = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
+    recent_comments = serializers.SerializerMethodField()
+    user = UserPublicSerializer()
+
+    class Meta:
+        model = Post
+        fields = [
             "id",
             "title",
             "description",
@@ -118,17 +133,40 @@ class PostListSerializer(serializers.ModelSerializer):
             "slug",
             "category",
             "view_count",
+            "likes_count",
+            "has_liked",
+            "comments_count",
+            "recent_comments",
             "update_at",
             "created_at",
             "featured",
             "user",
-            
         ]
+
     def get_view_count(self, obj):
         try:
-            return obj.post_analytics.views
+            analytics = obj.post_analytics
+            return analytics.impressions + analytics.views
         except PostAnalytics.DoesNotExist:
             return 0
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_has_liked(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return PostLike.objects.filter(post=obj, user=request.user).exists()
+        return False
+
+    def get_comments_count(self, obj):
+        return obj.post_comments.filter(parent=None, is_active=True).count()
+
+    def get_recent_comments(self, obj):
+        comments = obj.post_comments.filter(
+            parent=None, is_active=True
+        ).select_related('user').order_by('-created_at')[:2]
+        return RecentCommentSerializer(comments, many=True).data
 
 
 class PostAnalyticsSerializer(serializers.ModelSerializer):
@@ -180,15 +218,13 @@ class PostInteraccionSerializer(serializers.ModelSerializer):
         ]
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    post_title= serializers.SerializerMethodField()
-    replies_count=serializers.SerializerMethodField()
-    # replies=serializers.SerializerMethodField()
-    
-    
+    user = UserPublicSerializer(read_only=True)
+    post_title = serializers.SerializerMethodField()
+    replies_count = serializers.SerializerMethodField()
+
     class Meta:
-        model=Comment
-        fields=[
+        model = Comment
+        fields = [
             "id",
             "user",
             "post",
@@ -199,18 +235,12 @@ class CommentSerializer(serializers.ModelSerializer):
             "update_at",
             "is_active",
             "replies_count",
-            # "replies",
-            
         ]
-        
-    def get_post_title(self,obj):
+
+    def get_post_title(self, obj):
         return obj.post.title
-    
-    def get_replies(self,obj):
-        replies= obj.replies.filter(is_active=True)
-        return CommentSerializer(replies,many=True).data
-    
-    def get_replies_count(self,obj):
+
+    def get_replies_count(self, obj):
         return obj.replies.filter(is_active=True).count()
 
 

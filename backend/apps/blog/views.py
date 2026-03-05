@@ -1,12 +1,9 @@
-from rest_framework_api.views import StandardAPIView,APIView
-from rest_framework.exceptions import NotFound,APIException,ValidationError
+from rest_framework_api.views import StandardAPIView, APIView
+from rest_framework.exceptions import NotFound, APIException, ValidationError
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework import permissions
-from django.db.models.functions import Coalesce
-from django.db.models import Q,F,Value
 from rest_framework import status
-from bs4 import BeautifulSoup
 
 import redis
 
@@ -20,232 +17,218 @@ from .models import (
     CategoryAnalytics,
     PostView,
     PostInteraccion,
-    Comment,
-    PostLike,
-    PostShare,
 )
 from .serializers import (
     PostSerializer,
     PostListSerializer,
     HeadingSerializer,
     CategoryListSerializer,
-    CommentSerializer
-    
-    )
+    CommentSerializer,
+)
 from .utils import get_client_ip
-from .tasks import increment_post_views_task
 from django.db.models import Prefetch
 from apps.authentication.models import UserAccount
 from faker import Faker
-from utils.string_utils import sanitize_string,sanitize_html
+from utils.string_utils import sanitize_string, sanitize_html
 
 import random
 import uuid
+from datetime import timedelta
+from urllib.request import urlopen
+from django.utils import timezone
+from django.core.files.base import ContentFile
 from django.utils.text import slugify
 from rest_framework.pagination import PageNumberPagination
 
-redis_client=redis.Redis(host=settings.REDIS_HOST,port=6379,db=0)
+# Clean Architecture: use cases and domain exceptions
+from .api.dependencies import (
+    get_categories_simple_use_case,
+    get_post_by_slug_use_case,
+    list_posts_by_author_use_case,
+    list_posts_use_case,
+    create_post_use_case,
+    update_post_use_case,
+    delete_post_use_case,
+    list_categories_use_case,
+    create_comment_use_case,
+    list_comments_use_case,
+    create_reply_use_case,
+    list_replies_use_case,
+    toggle_like_use_case,
+    share_post_use_case,
+)
+from .domain import (
+    PostNotFoundError,
+    CategoryNotFoundError,
+    PostPermissionError,
+    PostValidationError,
+)
+
+# Cliente Redis opcional: si no está disponible (ej. desarrollo sin Redis), no se usan impresiones
+try:
+    redis_client = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0) if getattr(settings, "USE_REDIS", True) else None
+except Exception:
+    redis_client = None
+
+
+def _safe_redis_incr(key):
+    if redis_client is None:
+        return
+    try:
+        redis_client.incr(key)
+    except Exception:
+        pass
+
+
+def _bulk_increment_impressions(post_ids, request=None):
+    """
+    Increment impressions only for posts the viewer hasn't seen yet.
+    Uses Django cache for dedup (24h TTL). If cache is unavailable, skips dedup
+    but still counts the impression.
+    """
+    if not post_ids:
+        return
+
+    from django.db.models import F
+
+    viewer_id = None
+    if request:
+        try:
+            if hasattr(request, "user") and request.user.is_authenticated:
+                viewer_id = f"u:{request.user.id}"
+            else:
+                viewer_id = f"ip:{get_client_ip(request)}"
+        except Exception:
+            pass
+
+    new_post_ids = list(post_ids)
+
+    if viewer_id:
+        try:
+            already_seen = set()
+            cache_keys = {str(pid): f"seen:{pid}:{viewer_id}" for pid in post_ids}
+            cached = cache.get_many(list(cache_keys.values()))
+            for pid, key in cache_keys.items():
+                if cached.get(key):
+                    already_seen.add(pid)
+
+            new_post_ids = [pid for pid in post_ids if str(pid) not in already_seen]
+
+            if new_post_ids:
+                to_cache = {f"seen:{pid}:{viewer_id}": 1 for pid in new_post_ids}
+                cache.set_many(to_cache, timeout=86400)
+        except Exception:
+            new_post_ids = list(post_ids)
+
+    try:
+        if new_post_ids:
+            PostAnalytics.objects.filter(post_id__in=new_post_ids).update(
+                impressions=F("impressions") + 1
+            )
+    except Exception:
+        pass
 
 
 class CategoriesListView(StandardAPIView):
+    """Simple list of all categories (e.g. for dropdowns). Use case: GetCategoriesSimpleUseCase."""
     permission_classes = [permissions.AllowAny]
-    
-    def get(self,request):
-        
-        categories=Category.objects.all()
-        
-        serialized_categories=CategoryListSerializer(categories,many=True).data
-        
-        
+
+    def get(self, request):
+        categories = get_categories_simple_use_case.execute()
+        serialized_categories = CategoryListSerializer(categories, many=True).data
         return self.response(serialized_categories)
 
 
 class DetailPostView(StandardAPIView):
+    """Get a single post by slug. Use case: GetPostBySlugUseCase."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        """
-        Obtener la informacion de un post
-        """
-
-        slug = request.query_params.get('slug', None)
-
-        if not slug:
-            raise ValueError("Slug parameter must be provided")
-
+        slug = request.query_params.get("slug", None)
         try:
-            post = Post.objects.get(slug=slug)
-        except Post.DoesNotExist:
-            raise NotFound(detail=f"No post found for {slug}")
-        
-        serialized_post = PostSerializer(post, context={'request': request}).data
-
+            post = get_post_by_slug_use_case.execute(slug)
+        except (ValueError, PostNotFoundError) as e:
+            raise NotFound(detail=str(e))
+        serialized_post = PostSerializer(post, context={"request": request}).data
         return self.response(serialized_post)
 class PostAuthorViews(StandardAPIView):
+    """CRUD for posts by the authenticated author. Use cases: List/Create/Update/Delete."""
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get(self, request):
-        user=request.user
-        if user.role == "customer":
-            return self.error("you do noy have permission to create post")
-        
-        posts = Post.objects.filter(user=user)
-        
+        try:
+            posts = list_posts_by_author_use_case.execute(request.user)
+        except PostPermissionError:
+            return self.error("You do not have permission to create post")
         if not posts.exists():
             raise NotFound(detail="No posts found")
-        
-        
-        serialized_post=PostListSerializer(posts,many=True).data
-        
-        
-        return self.paginate(request,serialized_post)
+        serialized_post = PostListSerializer(posts, many=True, context={'request': request}).data
+        return self.paginate(request, serialized_post)
 
 
     def put(self, request):
-        user = request.user
-        if user.role == "customer":
-            return self.error("You do not have permission to edit post")
-
         post_slug = request.data.get("post_slug")
         if not post_slug:
             return self.error("Missing post_slug", status=400)
-
-        title = sanitize_string(request.data.get("title"))
-        description = sanitize_string(request.data.get("description"))
-        content = sanitize_html(request.data.get("content"))
-        post_status = sanitize_string(request.data.get("status", "draft"))
-        keywords = sanitize_string(request.data.get("keywords", ""))
-        slug = slugify(request.data.get("slug"))
-        thumbnail = request.FILES.get('thumbnail')
-        category_slug = slugify(request.data.get("category"))
-
+        data = {
+            "title": request.data.get("title"),
+            "description": request.data.get("description"),
+            "content": request.data.get("content"),
+            "status": request.data.get("status", "draft"),
+            "keywords": request.data.get("keywords", ""),
+            "slug": request.data.get("slug"),
+            "category": request.data.get("category"),
+            "thumbnail": request.FILES.get("thumbnail"),
+        }
         try:
-            post = Post.objects.get(slug=post_slug,user=user)
-        except Post.DoesNotExist:
-            raise NotFound(f"Post '{post_slug}' does not exist.")
-
-        try:
-            category = Category.objects.get(slug=category_slug)
-        except Category.DoesNotExist:
-            return self.error(f"Category '{category_slug}' does not exist", status=400)
-
-        existing_post = Post.objects.filter(slug=slug).exclude(id=post.id).first()
-        if existing_post:
-            return self.error(f"The slug '{slug}' already exists for another post.")
-        
-        post.title = title
-        post.description = description
-        post.content = content
-        post.status = post_status
-        post.keywords = keywords
-        post.slug = slug
-        post.thumbnail = thumbnail
-        post.category = category
-        
-        soup = BeautifulSoup(content, "html.parser")
-        headings = soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
-
-        for order, heading in enumerate(headings, start=1):
-            level = int(heading.name[1])
-            Heading.objects.create(
-                post=post,
-                title=heading.get_text(strip=True),
-                slug=slugify(heading.get_text(strip=True)),
-                level=level,
-                order=order
-            )
-        post.save()    
-       
-        serialized_post = PostSerializer(post, context={'request': request}).data
-
+            post = update_post_use_case.execute(request.user, post_slug, data)
+        except PostPermissionError:
+            return self.error("You do not have permission to edit post")
+        except PostNotFoundError:
+            raise NotFound(detail=f"Post '{post_slug}' does not exist.")
+        except CategoryNotFoundError as e:
+            return self.error(str(e), status=400)
+        except PostValidationError as e:
+            return self.error(str(e), status=400)
+        serialized_post = PostSerializer(post, context={"request": request}).data
         return self.response(serialized_post)
        
       
     def post(self, request):
-        
-        user=request.user
-        if user.role == "customer":
-            return self.error("you do noy have permission to create post")
-        
-        
-        required_fields = ["title","content", "slug", "category"]
-        
-        missing_fields = [field for field in required_fields if not request.data.get(field)]
-        
-        if missing_fields:
-            return self.error(f"Missing required fields: {', '.join(missing_fields)}")
-        
-        
-        title=sanitize_string(request.data.get("title",None))
-        description=sanitize_string(request.data.get("description",""))
-        content=sanitize_html(request.data.get("content",None))
-        post_status=sanitize_string(request.data.get("status","draft"))
-        
-        thumbnail = request.FILES.get('thumbnail')
-        
-        keywords=sanitize_string(request.data.get("keywords",""))
-        slug=slugify(request.data.get("slug",None))
-        category_slug=slugify(request.data.get("category",None))
-        
+        data = {
+            "title": request.data.get("title"),
+            "description": request.data.get("description"),
+            "content": request.data.get("content"),
+            "status": request.data.get("status", "draft"),
+            "slug": request.data.get("slug"),
+            "category": request.data.get("category"),
+            "keywords": request.data.get("keywords", ""),
+            "thumbnail": request.FILES.get("thumbnail"),
+        }
         try:
-            category=Category.objects.get(slug=category_slug)
-        except Category.DoesNotExist:
-            return self.error(f"Category '{category_slug}' does not exist",status=400)
-        
-        try:
-            post =Post.objects.create(
-                user=user,
-                title=title,
-                description=description,
-                content=content,
-                keywords=keywords,
-                slug=slug,
-                category=category,
-                thumbnail=thumbnail,
-                status=post_status
-            )
-            
-            soup=BeautifulSoup(content,"html.parser")
-            headings=soup.find_all(["h1","h2","h3","h4","h5","h6"])
-             
-            for order,heading in enumerate(headings,start=1):
-                level= int(heading.name[1])
-                Heading.objects.create(
-                    post=post,
-                    title=heading.get_text(strip=True),
-                    slug=slugify(heading.get_text(strip=True)),
-                    level=level,
-                    order=order
-                )
-                 
-        except Exception as e:
-            return self.error(f"Error creating post: {str(e)}")
-  
-        return self.response(f"Post '{post.title}' created successfully",status=status.HTTP_201_CREATED)
+            post = create_post_use_case.execute(request.user, data)
+        except PostPermissionError:
+            return self.error("You do not have permission to create post")
+        except CategoryNotFoundError as e:
+            return self.error(str(e), status=400)
+        except PostValidationError as e:
+            return self.error(str(e), status=400)
+        return self.response(f"Post '{post.title}' created successfully", status=status.HTTP_201_CREATED)
     
     
     def delete(self, request):
-        user=request.user
-        if user.role == "customer":
-            return self.error("you do noy have permission to create post")
-        
-        post_slug=request.query_params.get("slug",None)
-        
+        post_slug = request.query_params.get("slug", None)
         if not post_slug:
-            raise NotFound(detail="Post slug  must be provided")
-        
+            raise NotFound(detail="Post slug must be provided")
         try:
-            post = Post.objects.get(slug=post_slug,user=user)
-        except Post.DoesNotExist:
-            raise NotFound(f"Post {post_slug} does not exist.")
-        
-        post.delete()
-        
+            delete_post_use_case.execute(request.user, post_slug)
+        except PostPermissionError:
+            return self.error("You do not have permission to delete post")
+        except PostNotFoundError:
+            raise NotFound(detail=f"Post {post_slug} does not exist.")
         self._invalidate_post_list_cache()
         self._invalidate_post_detail_cache(post_slug)
-        
-        
-        return self.response(f"post {post.title} deleted successfuly")
+        return self.response("Post deleted successfully")
     
     def _invalidate_post_list_cache(self):
         
@@ -258,7 +241,7 @@ class PostAuthorViews(StandardAPIView):
     def _invalidate_post_detail_cache(self,slug):
         
         
-        cache_keys=cache.keys("post_datail:*")
+        cache_keys=cache.keys("post_detail:*")
         
         for key in cache_keys:
             cache.delete(key)
@@ -271,110 +254,51 @@ class PostPagination(PageNumberPagination):
 
 
 class PostListView(StandardAPIView):
+    """List published posts with filters. Use case: ListPostsUseCase; cache in adapter."""
     def get(self, request, *args, **kwargs):
         try:
-            # Parametros de solicitud
             search = request.query_params.get("search", "").strip()
             sorting = request.query_params.get("sorting", None)
             ordering = request.query_params.get("ordering", None)
             author = request.query_params.get("author", None)
             is_featured = request.query_params.get("is_featured", None)
             categories = request.query_params.getlist("categories", [])
+            feed = request.query_params.get("feed", None)
             page = request.query_params.get("p", "1")
 
-            # Construir clave de cache para resultados paginados
-            cache_key = f"post_list:{search}:{sorting}:{ordering}:{author}:{categories}:{is_featured}:{page}"
-            cached_posts = cache.get(cache_key)
-            if cached_posts:
-                serialized_posts = PostListSerializer(cached_posts, many=True).data
-                for post in cached_posts:
-                    redis_client.incr(f"post:impressions:{post.id}")
-                return self.paginate(request, serialized_posts)
+            serializer_ctx = {'request': request}
 
-            # Consulta inicial optimizada
-            posts = Post.postobjects.all().select_related("category", "user").annotate(
-                analytics_views=Coalesce(F("post_analytics__views"), Value(0)),
-                analytics_likes=Coalesce(F("post_analytics__likes"), Value(0)),
-                analytics_comments=Coalesce(F("post_analytics__comments"), Value(0)),
-                analytics_shares=Coalesce(F("post_analytics__shares"), Value(0)),
+            is_featured_bool = None
+            if is_featured is not None:
+                is_featured_bool = str(is_featured).lower() in ("true", "1", "yes")
+
+            followed_by_user = None
+            if feed == "following" and request.user.is_authenticated:
+                followed_by_user = request.user
+
+            posts = list_posts_use_case.execute(
+                search=search or None,
+                author_username=author,
+                category_ids_or_slugs=categories or None,
+                is_featured=is_featured_bool,
+                sorting=sorting,
+                ordering=ordering,
+                followed_by_user=followed_by_user,
             )
-            
-            # Filtrar por autor
-            if author:
-                posts = posts.filter(user__username=author)
-                if not posts.exists():
-                    return self.error(f"No se encontraron posts para el autor: {author}", status=status.HTTP_404_NOT_FOUND)
-
-            # Resto de filtros y ordenamiento
-            if search:
-                posts = posts.filter(
-                    Q(title__icontains=search) |
-                    Q(description__icontains=search) |
-                    Q(content__icontains=search) |
-                    Q(keywords__icontains=search) |
-                    Q(category__name__icontains=search)
+            if author and not posts.exists():
+                return self.error(
+                    f"No se encontraron posts para el autor: {author}",
+                    status=status.HTTP_404_NOT_FOUND,
                 )
-            
-            # Filtrar por categoria
-            if categories:
-                category_queries = Q()
-                for category in categories:
-                    # Check if category is a valid uuid
-                    try:
-                        uuid.UUID(category)
-                        uuid_query = (
-                            Q(category__id=category)
-                        )
-                        category_queries |= uuid_query
-                    except ValueError:
-                        slug_query = (
-                            Q(category__slug=category)
-                        )
-                        category_queries |= slug_query
-                posts = posts.filter(category_queries)
-            
-            # Filtrar por posts destacados
-            
-            if is_featured :
-                
-                # Convertir el valor del parámetro a booleano
-                is_featured = is_featured.lower() in ['true', '1', 'yes']
-                posts = posts.filter(featured=is_featured)
-            
-            # Ordenamiento
-            if sorting:
-                if sorting == "newest":
-                    posts = posts.order_by("-created_at")
-                elif sorting == 'az':
-                    posts = posts.order_by("title")
-                elif sorting == 'za':
-                    posts = posts.order_by("-title")
-                elif sorting == "recently_updated":
-                    posts = posts.order_by("-updated_at")
-                elif sorting == "most_viewed":
-                    posts = posts.order_by("-analytics_views") 
 
-            # if ordering:
-
-            # Guardar los objetos en el caché
-            cache.set(cache_key, posts, timeout=60 * 5)
-
-            # Serializar los datos para la respuesta
-            serialized_posts = PostListSerializer(posts, many=True).data
-
-            # Incrementar impresiones en Redis
-            for post in posts:
-                redis_client.incr(f"post:impressions:{post.id}")  # Usar `post.id`
-
+            serialized_posts = PostListSerializer(posts, many=True, context=serializer_ctx).data
+            post_ids = [p.id for p in posts]
+            _bulk_increment_impressions(post_ids, request)
             return self.paginate(request, serialized_posts)
         except Exception as e:
             return self.error(f"Error inesperado: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    
-              
-        
-        
-        
+
+
 class PostDetailView(StandardAPIView):
     
 
@@ -434,7 +358,7 @@ class PostDetailView(StandardAPIView):
                     ip_address=ip_address,
                 )
             except Exception as e:
-                raise ValueError(f"Error creeating PostInteraction: {e}")
+                raise ValueError(f"Error creating PostInteraction: {e}")
 
             analytics, _ = PostAnalytics.objects.get_or_create(post=post)
             analytics.increment_metric('views')
@@ -470,170 +394,78 @@ class IncrementPostView(APIView):
             post_analytics, created = PostAnalytics.objects.get_or_create(post=post)
             post_analytics.increment_clicks()  # Correcto: sin argumentos adicionales
         except Exception as e:
-            raise APIException(detail=f"An error ocurred while updating post analytics : {str(e)}")
+            raise APIException(detail=f"An error occurred while updating post analytics: {str(e)}")
         return self.response({
-            "message":"click incremeted successfuly",
+            "message":"click incremented successfully",
             "clicks":post_analytics.clicks             
         })
 
 class CategoryListView(StandardAPIView):
     def get(self, request):
+        parent_slug = request.query_params.get("parent_slug", None)
+        ordering = request.query_params.get("ordering", None)
+        sorting = request.query_params.get("sorting", None)
+        search = request.query_params.get("search", "").strip()
 
-        try:
-            # Parametros de solicitud
-            parent_slug = request.query_params.get("parent_slug", None)
-            ordering = request.query_params.get("ordering", None)
-            sorting = request.query_params.get("sorting", None)
-            search = request.query_params.get("search", "").strip()
-            page = request.query_params.get("p", "1")
+        categories = list_categories_use_case.execute(
+            parent_slug=parent_slug,
+            search=search,
+            ordering=ordering,
+            sorting=sorting,
+        )
 
-            # Construir clave de cache para resultados paginados
-            cache_key = f"category_list:{page}:{ordering}:{sorting}:{search}:{parent_slug}"
-            cached_categories = cache.get(cache_key)
-            if cached_categories:
-                
-                # Serializar los datos del caché
-                serialized_categories = CategoryListSerializer(cached_categories, many=True).data
-                # Incrementar impresiones en Redis para los posts del caché
-                for category in cached_categories:
-                    redis_client.incr(f"category:impressions:{category.id}")  # Usar `post.id`
-                return self.paginate(request, serialized_categories)
+        if not categories.exists():
+            raise NotFound(detail="No categories found.")
 
-            # Consulta inicial optimizada
-            if parent_slug:
-                categories = Category.objects.filter(parent__slug=parent_slug).prefetch_related(
-                    Prefetch("category_analytics", to_attr="analytics_cache")
-                )
-            else:
-                # Si no especificamos un parent_slug buscamos las categorias padre
-                categories = Category.objects.filter(parent__isnull=True).prefetch_related(
-                    Prefetch("category_analytics", to_attr="analytics_cache")
-                )
+        serialized_categories = CategoryListSerializer(categories, many=True).data
 
-            if not categories.exists():
-                raise NotFound(detail="No categories found.")
-            
-            # Filtrar por busqueda
-            if search != "":
-                categories = categories.filter(
-                    Q(name__icontains=search) |
-                    Q(slug__icontains=search) |
-                    Q(title__icontains=search) |
-                    Q(description__icontains=search)
-                )
-            
-            # Ordenamiento
-            if sorting:
-                if sorting == 'newest':
-                    categories = categories.order_by("-created_at")
-                elif sorting == 'recently_updated':
-                    categories = categories.order_by("-updated_at")
-                elif sorting == 'most_viewed':
-                    categories = categories.annotate(popularity=F("analytics_cache__views")).order_by("-popularity")
+        for category in categories:
+            _safe_redis_incr(f"category:impressions:{category.id}")
 
-            if ordering:
-                if ordering == 'az':
-                    posts = posts.order_by("name")
-                if ordering == 'za':
-                    posts = posts.order_by("-name")
-
-            # Guardar los objetos en el caché
-            cache.set(cache_key, categories, timeout=60 * 5)
-
-            # Serializacion
-            serialized_categories = CategoryListSerializer(categories, many=True).data
-
-            # Incrementar impresiones en Redis
-            for category in categories:
-                redis_client.incr(f"category:impressions:{category.id}")
-
-            return self.paginate(request, serialized_categories)
-        except Exception as e:
-                raise APIException(detail=f"An unexpected error occurred: {str(e)}")
+        return self.paginate(request, serialized_categories)
            
            
 class CategoryDetailView(APIView):
-    
     def get(self, request):
-
         try:
-            # Obtener parametros
             slug = request.query_params.get("slug", None)
             page = request.query_params.get("p", "1")
-
             if not slug:
-                return self.error("Missing slug parameter")
-            
-            # Construir cache
+                return Response({"error": "Missing slug parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
             cache_key = f"category_posts:{slug}:{page}"
+            serializer_ctx = {"request": request}
             cached_posts = cache.get(cache_key)
             if cached_posts:
-                # Serializar los datos del caché
-                serialized_posts = PostListSerializer(cached_posts, many=True).data
-                # Incrementar impresiones en Redis para los posts del caché
-                for post in cached_posts:
-                    redis_client.incr(f"post:impressions:{post.id}")  # Usar `post.id`
+                serialized_posts = PostListSerializer(cached_posts, many=True, context=serializer_ctx).data
+                _bulk_increment_impressions([p.id for p in cached_posts], request)
                 return Response(serialized_posts)
 
-            # Obtener la categoria por slug
-            category = get_object_or_404(Category, slug=slug)
-
-            # Obtener los posts que pertenecen a esta categoria
-            posts = Post.postobjects.filter(category=category).select_related("category").prefetch_related(
-                Prefetch("post_analytics", to_attr="analytics_cache")
-            )
-            
+            posts = list_posts_use_case.execute(category_ids_or_slugs=[slug])
             if not posts.exists():
-                raise NotFound(detail=f"No posts found for category '{category.name}'")
-            
-            # Guardar los objetos en el caché
+                raise NotFound(detail="No posts found for this category.")
+
             cache.set(cache_key, posts, timeout=60 * 5)
-
-            # Serializar los posts
-            serialized_posts = PostListSerializer(posts, many=True).data
-
-            # Incrementar impresiones en Redis
-            for post in posts:
-                redis_client.incr(f"post:impressions:{post.id}")
-
-            return Response( serialized_posts)
+            serialized_posts = PostListSerializer(posts, many=True, context=serializer_ctx).data
+            _bulk_increment_impressions([p.id for p in posts], request)
+            return Response(serialized_posts)
+        except NotFound:
+            raise
         except Exception as e:
             raise APIException(detail=f"An unexpected error occurred: {str(e)}")         
            
            
 class ListPostCommentsView(StandardAPIView):
-    def get(self,request):
-        
-        post_slug= request.query_params.get("slug",None)
-        page=request.query_params.get("p","1")
-        
+    def get(self, request):
+        post_slug = request.query_params.get("slug", None)
+
         if not post_slug:
             raise NotFound(detail="A valid post slug must be provided")
-        
-        cache_key=f"post comments:{post_slug}:{page}"
-        cached_comments=cache.get(cache_key)
-        
-        if cached_comments :
-            return self.paginate(request,cached_comments)
-        
-        try:
-            post=Post.objects.get(slug=post_slug)
-        except Post.DoesNotExist:
-            raise ValueError(f"Post:{post_slug} does not exist")
-        
-        comments = Comment.objects.filter(post=post,parent=None)
-        
-        serialized_comments=CommentSerializer(comments,many=True).data
-        
-        
-        cache_index_key=f"post_comment_cache_key:{post_slug}"
-        cache_keys=cache.get(cache_index_key,[])
-        cache_keys.append(cache_key)
-        cache.set(cache_index_key, cache_keys, timeout=60 * 5)
-        
-        cache.set(cache_keys,serialized_comments, timeout=60 * 5)
-        
-        return self.paginate(request,serialized_comments)   
+
+        comments = list_comments_use_case.execute(post_slug)
+        serialized_comments = CommentSerializer(comments, many=True).data
+
+        return self.paginate(request, serialized_comments)   
     
                       
 class IncrementCategoryClicksView(APIView):
@@ -645,389 +477,263 @@ class IncrementCategoryClicksView(APIView):
         try:
             category=Category.objects.get(slug=data['slug'])
         except Category.DoesNotExist:
-            raise NotFound(detail="the requested post does not exist")
+            raise NotFound(detail="The requested category does not exist")
              
         try:
-            category_analytics, created = CategoryAnalytics.objects.get_or_create(category  =category)
-            category_analytics.increment_clicks()  # Correcto: sin argumentos adicionales
+            category_analytics, created = CategoryAnalytics.objects.get_or_create(category=category)
+            category_analytics.increment_clicks()
         except Exception as e:
-            raise APIException(detail=f"An error ocurred while updating post analytics : {str(e)}")
+            raise APIException(detail=f"An error occurred while updating category analytics: {str(e)}")
         return self.response({
-            "message":"click incremeted successfuly",
+            "message":"click incremented successfully",
             "clicks":category_analytics.clicks             
         })           
            
 class PostCommentViews(StandardAPIView):
-    permissions_classes=[permissions.IsAuthenticated]
-     
-    
-    def post(self,request):
-        
-        
-        
-        post_slug=request.data.get("post_slug",None)
-        user=request.user
-        ip_address=get_client_ip(request)
-        content=sanitize_html(request.data.get("content",None))
-        
-        
-        
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from apps.user_profile.notifications import create_notification
+
+        post_slug = request.data.get("post_slug", None)
+        content = sanitize_html(request.data.get("content", None))
+        ip_address = get_client_ip(request)
+
         if not post_slug:
             raise NotFound(detail="A valid post slug must be provided")
-        
-        try:
-            post=Post.objects.get(slug=post_slug)
-        
-        except Post.DoesNotExist:
-            raise ValueError(f"post:{post_slug} does not exist")
-        
-        comment=Comment.objects.create(
-            user=user,
-            post=post,
-            content=content,
+
+        comment = create_comment_use_case.execute(
+            user=request.user, post_slug=post_slug,
+            content=content, ip_address=ip_address,
         )
-        
-        self._invalidate_post_comment_cache(post_slug)
-        
-        self._register_comment_interaction(comment,post,ip_address,user)
-        
-        return self.response(f"comment created for post:{post.title}")
-    
+
+        if comment.post.user != request.user:
+            create_notification(
+                sender=request.user,
+                recipient=comment.post.user,
+                notification_type="comment",
+                post=comment.post,
+                comment=comment,
+            )
+
+        return self.response(f"Comment created for post: {comment.post.title}")
+
     def put(self, request):
+        from .api.dependencies import _comment_repo
+
         comment_id = request.data.get("comment_id", None)
-        user = request.user
         content = sanitize_html(request.data.get("content", None))
 
         if not comment_id:
             raise NotFound(detail="A valid comment id must be provided")
-
-        try:
-            comment = Comment.objects.get(id=comment_id, user=user)
-        except Comment.DoesNotExist:
-            raise ValueError(f"comment:{comment_id} does not exist")
-
         if not content:
             raise ValidationError(detail="Content is required")
 
-        comment.content = content
-        comment.save()
+        comment = _comment_repo.get_by_id_and_user(comment_id, request.user)
+        _comment_repo.update_content(comment, content)
 
-        self._invalidate_post_comment_cache(comment.post.slug)
+        return self.response("Comment updated successfully")
 
-        if comment.parent and comment.parent.replies.exists():
-            self._invalidate_comment_replies_cache(comment.parent.id)
-
-        return self.response("Comment updated successfully")   
-    
     def delete(self, request):
+        from .api.dependencies import _comment_repo, _interaction_repo
+
         comment_id = request.query_params.get("comment_id", None)
-        user = request.user
 
         if not comment_id:
             raise NotFound(detail="A valid comment id must be provided")
 
-        comment = get_object_or_404(Comment, id=comment_id, user=user) #Usando get_object_or_404
-
+        comment = _comment_repo.get_by_id_and_user(comment_id, request.user)
         post = comment.post
-        post_analytics, _ = PostAnalytics.objects.get_or_create(post=comment.post)
+        _comment_repo.delete(comment)
 
-        if comment.parent and comment.parent.replies.exists():
-            self._invalidate_comment_replies_cache(comment.parent.id)
+        analytics = _interaction_repo.get_or_create_analytics(post)
+        analytics.comments = _comment_repo.count_active(post)
+        analytics.save()
 
-        comment.delete()
-
-        comments_count = Comment.objects.filter(post=post, is_active=True).count() #Corrige el error en el count.
-
-        post_analytics.comments = comments_count
-        post_analytics.save()
-
-        self._invalidate_post_comment_cache(post.slug)
-
-        return self.response("comment delete successful")
-
-    def _register_comment_interaction(self,comment,post,ip_address,user):
-
-        PostInteraccion.objects.create(
-            user=user,
-            post=post,
-            interaction_type="comment",
-            comment=comment,
-            ip_address=ip_address
-            
-            )
-    
-        analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-        analytics.increment_metric("comments")   
-    
-    def _invalidate_post_comment_cache(self,post_slug):
-        
-        cache_index_key=f"post_comments_cache_key:{post_slug}"
-        cache_keys=cache.get(cache_index_key,[])
-        
-        
-        for key in cache_keys:
-            cache.delete(key)
-        
-         
-        cache.delete(cache_index_key)
-        
-        
-    def _invalidate_comment_replies_cache(self, comment_id):
-        
-        
-        cache_index_key=f"_invalidate_comment_replies_cache:{comment_id}"
-        cache_keys=cache.get(cache_index_key,[])
-        
-        for key in cache_keys:
-            cache.delete(key)
-        
-        cache.delete(cache_index_key)   
+        return self.response("Comment deleted successfully")   
         
         
 class ListCommentRepliesView(StandardAPIView):
-    permissions_classes=[permissions.IsAuthenticated]
-    def get(self,request):
-        
-        comment_id=request.query_params.get("comment_id",None)
-        page=request.query_params.get("p","1")
-        
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        comment_id = request.query_params.get("comment_id", None)
+
         if not comment_id:
             raise NotFound(detail="A valid comment id must be provided")
-        
-        cache_key=f"comment replies:{comment_id}:{page}"
-        cached_replies=cache.get(cache_key)
-        if cached_replies :
-            return self.paginate(request, cached_replies)
-                
-        
-        
-        
-        try:
-            parent_comment=Comment.objects.get(id=comment_id)
-        except Comment.DoesNotExist:
-            raise NotFound(f"comment:{comment_id} does not exist")
-        
-        
-        replies=parent_comment.replies.filter(is_active=True).order_by("-created_at")
-        
-        
-        serialized_replies=CommentSerializer(replies,many=True).data
-        
-        self._register_comment_reply_cache_key(comment_id,cache_key)
-        
-        cache.set(cache_key,serialized_replies, timeout=60 * 5)
-        
-        
-        return self.paginate(request,serialized_replies,) 
-        
-    def _register_comment_reply_cache_key(self,comment_id,cache_key):
-        
-        
-        cache_index_key=f"comment_replies_cache_keys:{comment_id}"
-        cache_keys=cache.get(cache_index_key,[])
-        if cache_key not in cache_keys:
-            cache_keys.append(cache_key)
-        cache.set(cache_index_key,cache_keys,timeout=60 * 5)
+
+        replies = list_replies_use_case.execute(comment_id)
+        serialized_replies = CommentSerializer(replies, many=True).data
+
+        return self.paginate(request, serialized_replies)
         
         
 class CommentReplyViews(StandardAPIView):
-    permissions_classes=[permissions.IsAuthenticated]
-    
-    def post(self,request):
-        
-        comment_id=request.data.get("comment_id",None)
-        user=request.user
-        ip_address=get_client_ip(request)
-        content=sanitize_html(request.data.get("content",None))
-        
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        comment_id = request.data.get("comment_id", None)
+        content = sanitize_html(request.data.get("content", None))
+        ip_address = get_client_ip(request)
+
         if not comment_id:
             raise NotFound(detail="A valid comment id must be provided")
-        
-        try:
-            parent_comment=Comment.objects.get(id=comment_id)
-        except Comment.DoesNotExist:
-            raise ValueError(f"comment:{comment_id} does not exist")
-        
-        
-        comment= Comment.objects.create(
-            user=user,
-            post=parent_comment.post,
-            parent=parent_comment,
-            content=content,
-              
+
+        create_reply_use_case.execute(
+            user=request.user, comment_id=comment_id,
+            content=content, ip_address=ip_address,
         )
-        
-        
-        self._invalidate_post_replies_cache(comment_id)
-        
-        self._register_comment_interaction(comment,comment.post,ip_address,user)
-        
-        return self.response("comment created successfuly")
-
-    def _register_comment_interaction(self,comment,post,ip_address,user):
-
-        PostInteraccion.objects.create(
-            user=user,
-            post=post,
-            interaction_type="comment",
-            comment=comment,
-            ip_address=ip_address
-            
-            )
-    
-        analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-        analytics.increment_metric("comments")
-    
-    def _invalidate_post_replies_cache(self,comment_id):
-        
-        cache_index_key=f"comment_replies_cache_keys:{comment_id}"
-        cache_keys=cache.get(cache_index_key,[])
-        
-        
-        for key in cache_keys:
-            cache.delete(key)
-        
-         
-        cache.delete(cache_index_key)
+        return self.response("Reply created successfully")
         
         
         
 class PostLikeView(StandardAPIView):
-    permissions_classes=[permissions.IsAuthenticated] 
-    
-    def post(self,request):
-        
-        post_slug=request.data.get("slug",None)
-        user=request.user
-        ip_address=get_client_ip(request)
-        
-        if not post_slug:
-            raise NotFound(detail="A valid post slug must be provided")
-        
-        try:
-            post=Post.objects.get(slug=post_slug)
-        except Post.DoesNotExist:
-            raise ValueError(f"post:{post_slug} does not exist")
-        
-        if PostLike.objects.filter(post=post,user=user).exists():
-            
-            raise ValidationError(detail="You have already liked this post")
-        
-        PostLike.objects.create(post=post,user=user)
-        
-        PostInteraccion.objects.create(
-            user=user,
-            post=post,
-            interaction_type="like",
-            ip_address=ip_address
-        )
-        
-        analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-        analytics.increment_metric("likes")
-        
-        return self.response(f"you have a liked the post {post.title}")
-    
-    def delete(self,request):
-        
-        post_slug=request.query_params.get("slug",None)
-        user=request.user
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from apps.user_profile.notifications import create_notification
+
+        post_slug = request.data.get("slug", None)
+        ip_address = get_client_ip(request)
 
         if not post_slug:
             raise NotFound(detail="A valid post slug must be provided")
-        
+
+        try:
+            result = toggle_like_use_case.like(request.user, post_slug, ip_address)
+        except ValueError as e:
+            raise ValidationError(detail=str(e))
+
         try:
             post = Post.objects.get(slug=post_slug)
+            if post.user != request.user:
+                create_notification(
+                    sender=request.user,
+                    recipient=post.user,
+                    notification_type="like",
+                    post=post,
+                )
         except Post.DoesNotExist:
-            raise ValueError(f"post with a slug:{post_slug} does not exist")
-            
+            pass
+
+        return self.response(f"You have liked the post '{result['post_title']}'")
+
+    def delete(self, request):
+        post_slug = request.query_params.get("slug", None)
+
+        if not post_slug:
+            raise NotFound(detail="A valid post slug must be provided")
+
         try:
-            like=PostLike.objects.get(post=post,user=user)
-        except PostLike.DoesNotExist:
-            raise ValidationError(detail="You have not liked this post")
-        
-        like.delete()
-        
-        
-        analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-        analytics.likes=PostLike.objects.filter(post=post).count()
-        analytics.save()
-        
-        return self.response(f"you have unliked the post {post.title}")
+            result = toggle_like_use_case.unlike(request.user, post_slug)
+        except ValueError as e:
+            raise ValidationError(detail=str(e))
+
+        return self.response(f"You have unliked the post '{result['post_title']}'")
         
  
 class PostShareView(StandardAPIView):
-    permissions_classes=[permissions.IsAuthenticated]
-    def post(self,request):
-        
-        
-        post_slug=request.data.get("slug",None)
-        plataform=request.data.get("plataform","other").lower()
-        user= request.user if request.user.is_authenticated else None
-        ip_address=get_client_ip(request)
-        
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        post_slug = request.data.get("slug", None)
+        platform = request.data.get("plataform", "other").lower()
+        user = request.user if request.user.is_authenticated else None
+        ip_address = get_client_ip(request)
+
         if not post_slug:
             raise NotFound(detail="A valid post slug must be provided")
-        
-        try:
-            post= Post.objects.get(slug=post_slug)
-        except Post.DoesNotExist:
-            raise NotFound(detail=f"post:{post_slug} does not exist")
-        
-        valid_plataforms=[choice[0] for choice in PostShare._meta.get_field("plataform").choices]
-        if plataform not in valid_plataforms:
-            raise ValidationError(detail=f"invalid plataform. Valid options are {', '.join(valid_plataforms)}")
-        
-        PostShare.objects.create(
-            post=post,
-            user=user,
-            plataform=plataform
-            )
 
-        PostInteraccion.objects.create(
-            user=user,
-            post=post,
-            interaction_type="share",
-            ip_address=ip_address
+        try:
+            result = share_post_use_case.execute(
+                post_slug=post_slug, platform=platform,
+                ip_address=ip_address, user=user,
+            )
+        except ValueError as e:
+            raise ValidationError(detail=str(e))
+
+        return self.response(
+            f"Post '{result['post_title']}' shared successfully on {result['platform'].capitalize()}"
         )
-        
-        analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-        analytics.increment_metric("shares")
-        
-        
-        
-        return self.response(f"post '{post.title}' shared successfuly on {plataform.capitalize()}")
  
         
 class GenerateFakePostView(StandardAPIView):
-    
-    def get(self,request):
+    """Genera posts de prueba con imagen (Picsum), contenido y fechas reales en el pasado."""
+
+    def get(self, request):
         fake = Faker()
-        
         categories = list(Category.objects.all())
-        
         if not categories:
-            return self.response("No categories found",400)
-        
-        posts_to_generate=100
+            return self.response("No hay categorías. Crea al menos una categoría en el blog.", 400)
+
+        # Varios autores para que el feed sea tipo Twitter (no todo del mismo usuario)
+        users = list(UserAccount.objects.filter(is_active=True)[:20])
+        if not users:
+            return self.response("No hay usuarios en el sistema. Crea un usuario (o superusuario) primero.", 400)
+
+        posts_to_generate = 100
         status_options = ["draft", "published"]
-        
-        for _ in range(posts_to_generate):
-            title = fake.sentence(nb_words=6)
-            user=UserAccount.objects.get(username="felipe1")
+
+        for i in range(posts_to_generate):
+            user = users[i % len(users)]  # Rotar entre todos los usuarios
+            title = fake.sentence(nb_words=6).rstrip(".")
+            slug_base = slugify(title)[:80] or "post"
+            slug = f"{slug_base}-{str(uuid.uuid4())[:8]}"
+            # Fecha de creación en el pasado (hasta 2 años atrás) para que "hace X" sea real
+            created_at = timezone.now() - timedelta(
+                days=random.randint(0, 730),
+                hours=random.randint(0, 23),
+                minutes=random.randint(0, 59),
+            )
+
             post = Post(
                 id=uuid.uuid4(),
                 user=user,
-                title = title,
-                description= fake.sentence(nb_words=12),
+                title=title,
+                description=fake.sentence(nb_words=12),
                 content=fake.paragraph(nb_sentences=5),
                 keywords=", ".join(fake.words(nb=5)),
-                slug = slugify(title),
+                slug=slug,
                 category=random.choice(categories),
                 status=random.choice(status_options),
+                created_at=created_at,
             )
+
+            # Imagen real desde Picsum (variada por seed) para que cada post tenga miniatura
+            has_thumbnail = False
+            try:
+                img_url = f"https://picsum.photos/seed/{post.id}/800/600"
+                with urlopen(img_url, timeout=10) as resp:
+                    post.thumbnail.save(
+                        f"fake_{uuid.uuid4().hex[:12]}.jpg",
+                        ContentFile(resp.read()),
+                        save=False,
+                    )
+                has_thumbnail = True
+            except Exception:
+                try:
+                    with urlopen("https://picsum.photos/800/600", timeout=10) as resp:
+                        post.thumbnail.save(
+                            f"fake_{uuid.uuid4().hex[:12]}.jpg",
+                            ContentFile(resp.read()),
+                            save=False,
+                        )
+                    has_thumbnail = True
+                except Exception:
+                    pass
+            if not has_thumbnail:
+                continue  # El modelo exige thumbnail; saltamos este post si no hay imagen
+
             post.save()
-            
-        return self.response(f"{posts_to_generate} post generados correctamente")
+
+            # Fijar update_at en el pasado para que "actualizado hace X" sea coherente
+            updated_at = created_at + timedelta(
+                days=random.randint(0, 14),
+                hours=random.randint(0, 23),
+            )
+            Post.objects.filter(pk=post.pk).update(update_at=updated_at)
+
+        return self.response(f"{posts_to_generate} posts generados con imagen y fechas reales.")
     
 class GenerateFakeAnalyticsView(StandardAPIView):
     
@@ -1058,31 +764,118 @@ class GenerateFakeAnalyticsView(StandardAPIView):
             analytics._update_click_through_rate()
             analytics.save()
             
-        return self.response({"message":f"analiticas generadas para {analytics_to_generate} posts"}) 
+        return self.response({"message":f"analiticas generadas para {analytics_to_generate} posts"})
+
+
+class GenerateDemoUsersView(StandardAPIView):
+    """Crea varios usuarios de prueba para que el feed tenga varios autores (demo tipo Twitter)."""
+
+    def get(self, request):
+        from apps.user_profile.models import UserProfile
+
+        fake = Faker()
+        count = 5
+        password_demo = "demo1234"
+        created = []
+        errors = []
+
+        for i in range(1, count + 1):
+            username = f"demo{i}"
+            email = f"demo{i}@demo.local"
+            if UserAccount.objects.filter(username=username).exists():
+                continue
+            if UserAccount.objects.filter(email=email).exists():
+                email = f"demo{i}_{uuid.uuid4().hex[:6]}@demo.local"
+            try:
+                user = UserAccount.objects.create_user(
+                    email=email,
+                    password=password_demo,
+                    username=username,
+                    first_name=fake.first_name(),
+                    last_name=fake.last_name(),
+                )
+                user.is_active = True
+                user.role = "editor"
+                user.save()
+                UserProfile.objects.get_or_create(user=user, defaults={"biography": ""})
+                created.append(username)
+            except Exception as e:
+                errors.append(f"{username}: {str(e)}")
+
+        if created:
+            return self.response(
+                f"Usuarios de prueba creados: {', '.join(created)}. Contraseña para todos: {password_demo}"
+            )
+        if errors:
+            return self.response(
+                f"No se pudo crear ningún usuario. Errores: {'; '.join(errors[:3])}",
+                400,
+            )
+        # Todos (demo1–demo5) ya existen → éxito, no es error
+        return self.response(
+            "Los usuarios demo (demo1–demo5) ya existen. Pulsa 'Generar posts de prueba' para repartir posts entre todos."
+        )
+
+
+class GlobalSearchView(StandardAPIView):
+    """Unified search across posts, users, and categories."""
+
+    def get(self, request):
+        q = request.query_params.get("q", "").strip()
+        search_type = request.query_params.get("type", "all")
+
+        if not q:
+            return self.response({"posts": [], "users": [], "categories": []})
+
+        from apps.authentication.serializers import UserPublicSerializer
+        from django.db.models import Q
+
+        results = {}
+
+        if search_type in ("all", "posts"):
+            posts = Post.postobjects.filter(
+                Q(title__icontains=q) | Q(description__icontains=q)
+            ).select_related("category", "user")[:10]
+            results["posts"] = PostListSerializer(
+                posts, many=True, context={"request": request}
+            ).data
+
+        if search_type in ("all", "users"):
+            results["users"] = UserPublicSerializer(
+                UserAccount.objects.filter(
+                    Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q),
+                    is_active=True,
+                )[:10],
+                many=True,
+            ).data
+
+        if search_type in ("all", "categories"):
+            results["categories"] = CategoryListSerializer(
+                Category.objects.filter(Q(name__icontains=q) | Q(slug__icontains=q))[:10],
+                many=True,
+            ).data
+
+        return self.response(results)
+
 
 class AuthorPostListView(StandardAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get(self, request, *args, **kwargs):
         try:
-            page = request.query_params.get("p", "1")
-            page_size = request.query_params.get("page_size", "12")
-            
-            cache_key = f"author_posts:{request.user.username}:{page}:{page_size}"
+            cache_key = f"author_posts:{request.user.username}:{request.query_params.get('p', '1')}:{request.query_params.get('page_size', '12')}"
             cached_posts = cache.get(cache_key)
-            
             if cached_posts:
                 return self.paginate(request, cached_posts)
-            
-            posts = Post.objects.filter(user=request.user).select_related("category").order_by("-created_at")
-            
+
+            posts = list_posts_by_author_use_case.execute(request.user).order_by("-created_at")
             if not posts.exists():
                 return self.response([], status=status.HTTP_200_OK)
-            
-            serialized_posts = PostListSerializer(posts, many=True).data
+
+            serialized_posts = PostListSerializer(posts, many=True, context={"request": request}).data
             cache.set(cache_key, serialized_posts, timeout=60 * 5)
-            
             return self.paginate(request, serialized_posts)
-            
+        except PostPermissionError:
+            return self.error("You do not have permission to view author posts", status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             return self.error(f"Error al obtener los posts del autor: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR) 

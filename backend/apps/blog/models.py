@@ -118,7 +118,7 @@ class Post(models.Model):
     
     
     
-    status = models.CharField(max_length=10, choices=status_options,default='draft')
+    status = models.CharField(max_length=10, choices=status_options, default='published')
     
     objects = models.Manager()
     postobjects = PostObjects()
@@ -335,24 +335,7 @@ def create_category_analytics(sender,instance,created,**kwargs):
         CategoryAnalytics.objects.create(category=instance)
    
 @receiver(post_save,sender=PostView)
-def handle_post_like(sender,instance,created,**kwargs):
+def handle_post_view(sender,instance,created,**kwargs):
     if created:
-        PostInteraccion.objects.create(
-            user=instance.user,
-            post=instance.post,
-            interaction_type="like",
-            
-        )
-    analytics,_=PostAnalytics.objects.get_or_create(post=instance.post)
-    analytics.increment_likes()
-    
-def handle_post_share(sender,instance,created,**kwargs):
-    if created:
-        PostInteraccion.objects.create(
-            user=instance.user,
-            post=instance.post,
-            interaction_type="share",
-            
-        )
-    analytics,_=PostAnalytics.objects.get_or_create(post=instance.post)
-    analytics.increment_shares()
+        analytics,_=PostAnalytics.objects.get_or_create(post=instance.post)
+        analytics.increment_metric("views")

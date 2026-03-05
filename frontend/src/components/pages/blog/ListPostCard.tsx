@@ -1,101 +1,221 @@
-import { IPostsList } from "@/interfaces/blog/IPost";
-import { RootState } from "@/redux/reducers";
-import { useState } from "react";
-import moment from "moment";
-import Image from "next/image";
-import Link from "next/link";
-import { useSelector } from "react-redux";
-import DeletPostModal from "./DeletePostModal";
-import EditPostModal from "./EditPostModal";
+import { IPostsList } from '@/interfaces/blog/IPost';
+import { RootState } from '@/redux/reducers';
+import { useState } from 'react';
+import moment from 'moment';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useSelector } from 'react-redux';
+import { mediaUrl } from '@/utils/mediaUrl';
+import useLike from '@/hooks/useLike';
+import {
+  HeartIcon,
+  ChatBubbleOvalLeftIcon,
+  ChartBarIcon,
+  BookmarkIcon,
+  ArrowUpTrayIcon,
+  EllipsisHorizontalIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { formatCompact } from '@/utils/formatNumber';
+import DeletPostModal from './DeletePostModal';
+import EditPostModal from './EditPostModal';
 
 interface ComponentsProps {
   post: IPostsList;
-  handleDelete?: (slug: string) => Promise<void> ;
+  handleDelete?: (slug: string) => Promise<void>;
   loadingDelete?: boolean;
 }
 
+export default function ListPostCard({
+  post,
+  handleDelete,
+  loadingDelete = false,
+}: ComponentsProps) {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
+  const postUrl = `/blog/post/${post?.slug}`;
+  const {
+    liked,
+    count: likesCount,
+    toggle: toggleLike,
+  } = useLike({
+    slug: post?.slug,
+    initialLiked: post?.has_liked ?? false,
+    initialCount: post?.likes_count ?? 0,
+  });
 
-export default function ListPostCard({post,handleDelete,loadingDelete}:ComponentsProps) {
-    
-    const user=useSelector((state:RootState) => state.auth.user);
-    const [openDelete,setOpenDelete]=useState<boolean>(false)
-    const [openEdit, setOpenEdit] = useState<boolean>(false);
-    return (
-      <article key={post.id} className="relative isolate flex flex-col gap-8 lg:flex-row">
-        {post?.thumbnail && (
-          <div className="relative aspect-video sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
+  return (
+    <article className="group border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50/60 dark:border-dark-third dark:hover:bg-dark-second/50">
+      <div className="flex gap-2.5">
+        {/* Avatar */}
+        <Link href={`/@/${post?.user?.username}/`} className="shrink-0">
+          {post?.user?.profile_picture ? (
             <Image
-              width={290}
-              height={290}
+              width={32}
+              height={32}
               alt=""
-              src={`http://127.0.0.1:8004${post.category.thumbnail}`}
-              className="absolute inset-0 size-full rounded-2xl bg-gray-50 object-cover"
+              src={mediaUrl(post.user.profile_picture)}
+              className="h-8 w-8 rounded-full object-cover"
             />
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-          </div>
-        )}
-        <div>
-          <div className="flex items-center gap-x-4 text-xs">
-            <time dateTime={post?.updated_at} className="text-gray-500">
-              {moment(post?.updated_at).subtract(3, 'days').calendar()}
-            </time>
-            <Link
-              href={`/category/${post.category.slug}`}
-              className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
-            >
-              {post.category.name}
-            </Link>
-          </div>
-          <div className="group relative max-w-xl">
-            <h3 className="mt-3 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600">
-              <Link href={`blog/post/${post?.slug}`}>
-                <span className="absolute inset-0" />
-                {post.title}
-              </Link>
-            </h3>
-            <p className="mt-5 text-sm/6 text-gray-600">{post?.description}</p>
-          </div>
-          <div>
-            
-          </div>
-         
+          ) : (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-xs font-semibold text-violet-600 dark:bg-violet-900 dark:text-violet-300">
+              {post?.user?.username?.charAt(0)?.toUpperCase() || '?'}
+            </span>
+          )}
+        </Link>
 
-          <div className="mt-6 flex border-t border-gray-900/5 pt-6">
-            <div className="ml-auto flex items-center gap-x-4">
+        <div className="min-w-0 flex-1">
+          {/* Header */}
+          <div className="flex items-center gap-1 text-[13px] leading-tight">
+            <Link
+              href={`/@/${post?.user?.username}/`}
+              className="truncate font-semibold text-gray-900 hover:underline dark:text-dark-txt"
+            >
+              {post?.user?.username}
+            </Link>
+            <span className="text-gray-400 dark:text-dark-txt-secondary">·</span>
+            <span className="shrink-0 text-gray-400 dark:text-dark-txt-secondary">
+              {post?.category?.name}
+            </span>
+            <span className="text-gray-400 dark:text-dark-txt-secondary">·</span>
+            <time
+              dateTime={post?.created_at}
+              className="shrink-0 text-gray-400 dark:text-dark-txt-secondary"
+              title={post?.created_at ? moment(post.created_at).format('LL [a las] HH:mm') : ''}
+            >
+              {post?.created_at ? moment(post.created_at).fromNow(true) : ''}
+            </time>
+
+            {/* Menu (edit/delete) */}
+            <div className="relative ml-auto">
               <button
-                onClick={() => {
-                  setOpenEdit(!openDelete);
-                }}
                 type="button"
-                className="text-sm font-medium text-blue-600 hover:underline"
+                onClick={() => setOpenMenu(!openMenu)}
+                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-dark-third dark:hover:text-dark-txt"
+                aria-label="Más opciones"
               >
-                Edit
+                <EllipsisHorizontalIcon className="h-4 w-4" />
+              </button>
+              {openMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    aria-hidden
+                    onClick={() => setOpenMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-gray-200 bg-white py-0.5 shadow-lg dark:border-dark-third dark:bg-dark-bg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenMenu(false);
+                        setOpenEdit(true);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50 dark:text-dark-txt dark:hover:bg-dark-third"
+                    >
+                      <PencilSquareIcon className="h-3.5 w-3.5" /> Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenMenu(false);
+                        setOpenDelete(true);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" /> Eliminar
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Content + thumbnail */}
+          <Link href={postUrl} className="mt-0.5 flex gap-3 outline-none">
+            <p className="flex-1 text-[14px] leading-snug text-gray-800 line-clamp-2 dark:text-dark-txt">
+              {post?.description || post?.title}
+            </p>
+            {post?.thumbnail && (
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg">
+                <Image
+                  width={56}
+                  height={56}
+                  alt={post?.title || ''}
+                  src={mediaUrl(post.thumbnail)}
+                  className="h-14 w-14 object-cover"
+                />
+              </div>
+            )}
+          </Link>
+
+          {/* Actions — Twitter style */}
+          <div className="-ml-2 mt-0.5 flex items-center justify-between text-gray-400 dark:text-dark-txt-secondary">
+            <button
+              type="button"
+              onClick={toggleLike}
+              className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors duration-200 ${
+                liked ? 'text-red-500 hover:bg-red-500/10' : 'hover:bg-red-500/10 hover:text-red-500'
+              }`}
+              aria-label={liked ? 'Quitar me gusta' : 'Me gusta'}
+            >
+              <span className="inline-flex transition-transform duration-200 active:scale-125">
+                {liked ? <HeartIconSolid className="h-4 w-4" /> : <HeartIcon className="h-4 w-4" />}
+              </span>
+              <span className="min-w-[1ch]">{likesCount > 0 ? likesCount : ''}</span>
+            </button>
+            <Link
+              href={`${postUrl}#comments`}
+              className="flex items-center gap-1 rounded-full px-2 py-1 text-xs hover:bg-sky-500/10 hover:text-sky-500"
+              aria-label="Comentar"
+            >
+              <ChatBubbleOvalLeftIcon className="h-4 w-4" />
+              <span className="min-w-[1ch]">{(post?.comments_count ?? 0) > 0 ? post.comments_count : ''}</span>
+            </Link>
+            <Link
+              href={postUrl}
+              className="flex items-center gap-1 rounded-full px-2 py-1 text-xs hover:bg-sky-500/10 hover:text-sky-500"
+              aria-label="Vistas"
+            >
+              <ChartBarIcon className="h-4 w-4" />
+              <span className="min-w-[1ch]">{formatCompact(post?.view_count ?? 0)}</span>
+            </Link>
+            <div className="flex items-center">
+              <button
+                type="button"
+                className="rounded-full p-1 hover:bg-sky-500/10 hover:text-sky-500"
+                aria-label="Guardar"
+              >
+                <BookmarkIcon className="h-4 w-4" />
               </button>
               <button
-                onClick={() => {
-                  setOpenDelete(!openDelete);
-                }}
                 type="button"
-                className="text-sm font-medium text-red-600 hover:underline"
+                className="rounded-full p-1 hover:bg-sky-500/10 hover:text-sky-500"
+                aria-label="Compartir"
               >
-                Delete
+                <ArrowUpTrayIcon className="h-4 w-4" />
               </button>
             </div>
-            <DeletPostModal
-              open={openDelete}
-              setOpen={setOpenDelete}
-              post={post}
-              handleDelete={handleDelete || (() => Promise.resolve())}
-              loadingDelete={loadingDelete || false}
-            />
-            <EditPostModal open={openEdit} setOpen={setOpenEdit} slug={post?.slug} />
           </div>
         </div>
-      </article>
-    );
+      </div>
+
+      <DeletPostModal
+        open={openDelete}
+        setOpen={setOpenDelete}
+        post={post}
+        handleDelete={handleDelete || (() => Promise.resolve())}
+        loadingDelete={loadingDelete}
+      />
+      <EditPostModal open={openEdit} setOpen={setOpenEdit} slug={post?.slug} />
+    </article>
+  );
 }
 
-ListPostCard.defaultProps={
-    handleDelete:null,
-    loadingDelete:false
-}
+ListPostCard.defaultProps = {
+  handleDelete: undefined,
+  loadingDelete: false,
+};

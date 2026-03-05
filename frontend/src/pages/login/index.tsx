@@ -1,4 +1,4 @@
-import Botton from '@/components/Buttom';
+import Button from '@/components/Button';
 import EditEmail from '@/components/forms/EditEmail';
 import EditPassword from '@/components/forms/EditPassword';
 
@@ -85,7 +85,6 @@ export default function Page() {
         ToastSuccess('Login successfull.');
 
         router.push('/');
-        console.log(setLoading);
         
       } else {
         setEmail('');
@@ -101,7 +100,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 pt-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-dark-txt">
           Accede a tu cuenta
         </h2>
       </div>
@@ -110,18 +109,18 @@ export default function Page() {
         {step === 1 && (
           <form onSubmit={handleOnSubmit} className="space-y-2">
             <EditEmail data={email} setData={setEmail} title="Email" required />
-            <Botton disabled={loading} hoverEffect={!loading} type="submit">
+            <Button disabled={loading} hoverEffect={!loading} type="submit">
               {loading ? <LoadingMoon /> : 'Login'}
-            </Botton>
+            </Button>
           </form>
         )}
 
         {step === 2 && (
           <form onSubmit={handleOTPSubmit} className="space-y-2">
             <EditText data={otp} setData={setOTP} title="OTP Code" required />
-            <Botton disabled={loading} hoverEffect={!loading} type="submit">
+            <Button disabled={loading} hoverEffect={!loading} type="submit">
               {loading ? <LoadingMoon /> : 'Login'}
-            </Botton>
+            </Button>
           </form>
         )}
 

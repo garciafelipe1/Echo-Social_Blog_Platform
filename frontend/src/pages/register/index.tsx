@@ -1,4 +1,4 @@
-import Botton from '@/components/Buttom';
+import Button from '@/components/Button';
 import EditEmail from '@/components/forms/EditEmail';
 import EditPassword from '@/components/forms/EditPassword';
 import EditText from '@/components/forms/EditText';
@@ -52,12 +52,11 @@ export default function Page() {
       re_password: rePassword,
     };
 
-    console.log(registerData)
     try {
       setLoading(true);
       await dispatch(register(registerData));
     } catch (err) {
-      console.log(err);
+      // Error handled by Redux action
     } finally {
       setLoading(false);
     }
@@ -66,7 +65,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-32 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-dark-txt">
           Registrate y empieza ahora!
         </h2>
       </div>
@@ -92,9 +91,9 @@ export default function Page() {
           <EditPassword data={password} setData={setPassword} title="password" required />
           <EditPassword data={rePassword} setData={setRePassword} title="Repassword" required />
           {PasswordValidationText()}
-          <Botton disabled={loading} hoverEffect={!loading} type="submit">
+          <Button disabled={loading} hoverEffect={!loading} type="submit">
             {loading ? <LoadingMoon /> : 'Register'}
-          </Botton>
+          </Button>
         </form>
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">

@@ -6,10 +6,10 @@ from apps.user_profile.models import UserProfile
 User= get_user_model()
 
 class UserCreateSerializer(UserCreateSerializer):
-    qr_code=serializers.URLField(source='get_qr_code')   
+    qr_code = serializers.URLField(source='get_qr_code', read_only=True)
     class Meta(UserCreateSerializer.Meta):
         model = User
-        field= '__all__'
+        fields = ('email', 'username', 'first_name', 'last_name', 'password', 're_password', 'qr_code')
     
 class UserSerializer(serializers.ModelSerializer):
     qr_code=serializers.URLField(source='get_qr_code')

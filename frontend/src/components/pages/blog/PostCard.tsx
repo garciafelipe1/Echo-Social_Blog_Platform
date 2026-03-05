@@ -1,73 +1,181 @@
-import { IPostsList } from "@/interfaces/blog/IPost";
-import Image from "next/image";
+import { IPostsList } from '@/interfaces/blog/IPost';
+import Image from 'next/image';
 import moment from 'moment';
 import Link from 'next/link';
+import useLike from '@/hooks/useLike';
+import {
+  HeartIcon,
+  ChatBubbleOvalLeftIcon,
+  EllipsisHorizontalIcon,
+  ChartBarIcon,
+  BookmarkIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { formatCompact } from '@/utils/formatNumber';
+import { mediaUrl } from '@/utils/mediaUrl';
 
 interface ComponentProps {
-    post: IPostsList
+  post: IPostsList;
 }
 
-
-
-
 export default function PostCard({ post }: ComponentProps) {
+  const postUrl = `/blog/post/${post?.slug}`;
+  const { liked, count: likesCount, toggle: toggleLike } = useLike({
+    slug: post?.slug,
+    initialLiked: post?.has_liked ?? false,
+    initialCount: post?.likes_count ?? 0,
+  });
+
   return (
-    <div>
-      <article className="flex flex-col items-start justify-between">
-        {post?.thumbnail && (
-          <div className="relative w-full">
+    <article className="group/card overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:border-dark-third dark:bg-dark-bg dark:hover:shadow-none">
+      {/* Header: autor + tiempo + menú */}
+      <header className="flex items-center gap-3 px-4 py-3">
+        <Link href={`/@/${post?.user?.username}/`} className="flex shrink-0 items-center gap-3">
+          {post?.user?.profile_picture ? (
             <Image
-              width={146}
-              height={146}
+              width={36}
+              height={36}
               alt=""
-              src={`http://127.0.0.1:8004${post?.thumbnail}`}
-              className="aspect-video w-full rounded-2xl bg-gray-100 object-cover sm:aspect-[2/1] lg:aspect-[2/2]"
+              src={mediaUrl(post.user.profile_picture)}
+              className="size-9 rounded-full object-cover ring-1 ring-gray-200 dark:ring-dark-third"
             />
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
+          ) : (
+            <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-semibold text-white">
+              {post?.user?.username?.charAt(0)?.toUpperCase() || '?'}
+            </span>
+          )}
+          <div className="min-w-0 text-left">
+            <p className="truncate text-sm font-semibold text-gray-900 dark:text-dark-txt">
+              {post?.user?.username}
+            </p>
+            <p
+              className="truncate text-xs text-gray-500 dark:text-dark-txt-secondary"
+              title={post?.created_at ? moment(post.created_at).format('LL [a las] HH:mm') : ''}
+            >
+              {post?.category?.name} · {post?.created_at ? moment(post.created_at).fromNow() : '—'}
+            </p>
+          </div>
+        </Link>
+        <button
+          type="button"
+          className="ml-auto rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-dark-third dark:hover:text-dark-txt"
+          aria-label="Más opciones"
+        >
+          <EllipsisHorizontalIcon className="size-5" />
+        </button>
+      </header>
+
+      {/* Imagen */}
+      <Link href={postUrl} className="block">
+        {post?.thumbnail ? (
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-dark-second">
+            <Image
+              fill
+              alt={post?.title || 'Post'}
+              src={mediaUrl(post.thumbnail)}
+              className="object-cover"
+              sizes="(max-width: 600px) 100vw, 600px"
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400 dark:from-dark-second dark:to-dark-third dark:text-dark-txt-secondary">
+            <span className="text-4xl font-light">{post?.title?.charAt(0) || '?'}</span>
           </div>
         )}
-        <div className="max-w-xl">
-          <div className="mt-8 flex items-center gap-x-4 text-xs">
-            <time dateTime={post?.updated_at} className="text-gray-500">
-              {moment(post?.updated_at).subtract(3, 'days').calendar()}
-            </time>
-            <Link
-              href={`/category/${post?.user?.username}`}
-              className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
-            >
-              {post?.category?.name}
-            </Link>
-          </div>
-          <div className="group relative">
-            <h3 className="mt-3 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600">
-              <Link href={`/@/${post?.user?.username}/`}>
-                <span className="absolute inset-0" />
-                {post?.title}
-              </Link>
-            </h3>
-            <p className="mt-5 line-clamp-3 text-sm/6 text-gray-600">{post?.description}</p>
-          </div>
-          <div className="relative mt-8 flex items-center gap-x-4">
-            <Image
-              width={40}
-              height={40}
-              alt=""
-              src={`http://127.0.0.1:8004${post.user.profile_picture}`}
-              className="size-10 rounded-full bg-gray-100"
-            />
-            
-            <div className="text-sm leading-6">
-              <p className="font-semibold text-gray-900">
-                <Link href={`/@/${post?.user?.username}/`}>
-                  <span className="absolute inset-0" />
-                  {post?.user?.username}
-                </Link>
-              </p>
-            </div>
-            
-          </div>
+      </Link>
+
+      {/* Actions — Twitter style */}
+      <div className="flex items-center justify-between px-2 py-1.5 text-gray-500 dark:text-dark-txt-secondary">
+        <button
+          type="button"
+          onClick={toggleLike}
+          className={`flex items-center gap-1 rounded-full p-1.5 transition-colors duration-200 ${
+            liked
+              ? 'text-red-500 hover:bg-red-500/10'
+              : 'hover:bg-red-500/10 hover:text-red-500'
+          }`}
+          aria-label={liked ? 'Quitar me gusta' : 'Me gusta'}
+        >
+          <span className="inline-flex transition-transform duration-200 active:scale-125">
+            {liked ? <HeartIconSolid className="size-[18px]" /> : <HeartIcon className="size-[18px]" />}
+          </span>
+          <span className="min-w-[1ch] text-xs">
+            {likesCount > 0 ? likesCount : ''}
+          </span>
+        </button>
+        <Link
+          href={`${postUrl}#comments`}
+          className="flex items-center gap-1 rounded-full p-1.5 hover:bg-sky-500/10 hover:text-sky-500"
+          aria-label="Comentar"
+        >
+          <ChatBubbleOvalLeftIcon className="size-[18px]" />
+          <span className="min-w-[1ch] text-xs">
+            {(post?.comments_count ?? 0) > 0 ? post.comments_count : ''}
+          </span>
+        </Link>
+        <Link
+          href={postUrl}
+          className="flex items-center gap-1 rounded-full p-1.5 hover:bg-sky-500/10 hover:text-sky-500"
+          aria-label="Vistas"
+        >
+          <ChartBarIcon className="size-[18px]" />
+          <span className="min-w-[1ch] text-xs">{formatCompact(post?.view_count ?? 0)}</span>
+        </Link>
+        <div className="flex items-center">
+          <button
+            type="button"
+            className="rounded-full p-1.5 hover:bg-sky-500/10 hover:text-sky-500"
+            aria-label="Guardar"
+          >
+            <BookmarkIcon className="size-[18px]" />
+          </button>
+          <button
+            type="button"
+            className="rounded-full p-1.5 hover:bg-sky-500/10 hover:text-sky-500"
+            aria-label="Compartir"
+          >
+            <ArrowUpTrayIcon className="size-[18px]" />
+          </button>
         </div>
-      </article>
-    </div>
+      </div>
+
+      {/* Caption / descripcion */}
+      <div className="space-y-1 px-4 pb-2">
+        <Link href={postUrl} className="block">
+          <p className="line-clamp-2 text-sm text-gray-900 dark:text-dark-txt">
+            <span className="font-semibold">{post?.user?.username}</span>{' '}
+            <span className="text-gray-700 dark:text-dark-txt-secondary">{post?.description || post?.title}</span>
+          </p>
+        </Link>
+      </div>
+
+      {/* Comment previews (Instagram style) */}
+      {(post?.comments_count ?? 0) > 0 && (
+        <div className="space-y-0.5 px-4 pb-3">
+          {(post?.comments_count ?? 0) > 2 && (
+            <Link
+              href={`${postUrl}#comments`}
+              className="block text-[13px] text-gray-400 hover:text-gray-500 dark:text-dark-txt-secondary"
+            >
+              Ver los {post.comments_count} comentarios
+            </Link>
+          )}
+          {post?.recent_comments?.map((comment) => (
+            <p key={comment.id} className="line-clamp-1 text-sm">
+              <Link
+                href={`/@/${comment.username}`}
+                className="font-semibold text-gray-900 hover:underline dark:text-dark-txt"
+              >
+                {comment.username}
+              </Link>{' '}
+              <span className="text-gray-600 dark:text-dark-txt-secondary">
+                {comment.content.replace(/<[^>]*>/g, '').trim()}
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
+    </article>
   );
 }

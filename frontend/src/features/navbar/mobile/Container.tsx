@@ -3,9 +3,5 @@ interface ContainerProps {
 }
 
 export default function Container({ children }: ContainerProps) {
-  return (
-    <nav className="mx-auto block max-w-full border-b md:hidden ">
-      {children}
-    </nav>
-  );
+  return <div className="block md:hidden">{children}</div>;
 }

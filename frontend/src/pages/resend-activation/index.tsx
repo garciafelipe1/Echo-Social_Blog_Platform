@@ -1,4 +1,4 @@
-import Botton from '@/components/Buttom';
+import Button from '@/components/Button';
 import EditEmail from '@/components/forms/EditEmail';
 import EditPassword from '@/components/forms/EditPassword';
 import EditText from '@/components/forms/EditText';
@@ -34,7 +34,7 @@ export default function Page() {
       setLoading(true)
       await dispatch(resend_activation(resendActivationData))
     }catch (err){
-      console.log(err)
+      // Error handled by Redux action
     }finally{
       setLoading(false)
 
@@ -60,9 +60,9 @@ export default function Page() {
             required
           />
 
-          <Botton disabled={loading} hoverEffect={!loading} type="submit">
+          <Button disabled={loading} hoverEffect={!loading} type="submit">
             {loading ? <LoadingMoon /> : 'Enviar Correo'}
-          </Botton>
+          </Button>
         </form>
         <p className="mt-10 text-center text-sm/6 text-gray-500">
           No tienes cuenta? {''}

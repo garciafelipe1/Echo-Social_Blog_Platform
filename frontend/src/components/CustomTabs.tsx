@@ -7,26 +7,29 @@ interface ComponentProps {
   width?: string;
 }
 
-function classNames(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
-export default function CustomTabs({ titles, panels, width = 'md:w-32 w-full' }: ComponentProps) {
-  function getTabClassName(selected: boolean) {
-    return classNames(
-      `flex items-center justify-center col-span-1 ${width}`,
-      selected
-        ? 'bg-gray-100 focus:outline-none dark:bg-dark-second'
-        : 'hover:bg-gray-100 dark:hover:bg-dark-second',
-    );
-  }
-
+export default function CustomTabs({ titles, panels }: ComponentProps) {
   return (
     <TabGroup>
-      <TabList className="grid space-x-1 space-y-1 sm:flex sm:space-x-2 sm:space-y-0">
+      <TabList className="flex border-b border-gray-200 dark:border-dark-third">
         {titles.map((title) => (
-          <Tab key={title} className={({ selected }) => getTabClassName(selected)}>
-            {title}
+          <Tab
+            key={title}
+            className={({ selected }) =>
+              `relative flex-1 px-4 py-3 text-center text-sm font-semibold outline-none transition-colors ${
+                selected
+                  ? 'text-gray-900 dark:text-dark-txt'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-dark-txt-secondary dark:hover:text-dark-txt'
+              }`
+            }
+          >
+            {({ selected }) => (
+              <>
+                {title}
+                {selected && (
+                  <span className="absolute inset-x-0 bottom-0 mx-auto h-0.5 w-12 rounded-full bg-violet-500" />
+                )}
+              </>
+            )}
           </Tab>
         ))}
       </TabList>
@@ -41,5 +44,5 @@ export default function CustomTabs({ titles, panels, width = 'md:w-32 w-full' }:
 }
 
 CustomTabs.defaultProps = {
-  width: 'md:w-32 w-full',
+  width: 'w-full',
 };

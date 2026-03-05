@@ -1,30 +1,24 @@
-import DarkModeButton from "@/components/DarkModeButtom";
+import DarkModeButton from '@/components/DarkModeButton';
 
 const navigation = {
-  solutions: [
-    { name: 'Marketing', href: '#' },
-    { name: 'Analytics', href: '#' },
-    { name: 'Automation', href: '#' },
-    { name: 'Commerce', href: '#' },
-    { name: 'Insights', href: '#' },
+  plataforma: [
+    { name: 'Inicio', href: '/' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Contacto', href: '/contact' },
   ],
-  support: [
-    { name: 'Submit ticket', href: '#' },
-    { name: 'Documentation', href: '#' },
-    { name: 'Guides', href: '#' },
+  soporte: [
+    { name: 'Centro de ayuda', href: '/contact' },
+    { name: 'Preguntas frecuentes', href: '/contact#faq' },
   ],
-  company: [
-    { name: 'About', href: '#' },
-    { name: 'Blog', href: '#' },
-    { name: 'Jobs', href: '#' },
-    { name: 'Press', href: '#' },
+  empresa: [
+    { name: 'Acerca de', href: '#' },
+    { name: 'Blog', href: '/blog' },
   ],
   legal: [
-    { name: 'Terms of service', href: '#' },
-    { name: 'Privacy policy', href: '#' },
-    { name: 'License', href: '#' },
+    { name: 'Términos de servicio', href: '#' },
+    { name: 'Política de privacidad', href: '#' },
   ],
-  social: [   
+  social: [
     {
       name: 'Facebook',
       href: '#',
@@ -89,117 +83,87 @@ const navigation = {
   ],
 };
 
+function FooterLinkGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: { name: string; href: string }[];
+}) {
+  return (
+    <div>
+      <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">{title}</h3>
+      <ul className="mt-4 space-y-3">
+        {items.map((item) => (
+          <li key={item.name}>
+            <a
+              href={item.href}
+              className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-gray-400"
+            >
+              {item.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function Footer() {
   return (
-    <footer className="">
-      <div className="mx-auto max-w-7xl px-6 pb-8 pt-20 sm:pt-24 lg:px-8 lg:pt-32">
+    <footer>
+      <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-20 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-          <div className="grid grid-cols-2 gap-8 xl:col-span-2">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Solutions</h3>
-                <ul className="mt-6 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-gray-400"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Support</h3>
-                <ul className="mt-6 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-gray-400"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Company</h3>
-                <ul className="mt-6 space-y-4">
-                  {navigation.company.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-gray-400"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Legal</h3>
-                <ul className="mt-6 space-y-4">
-                  {navigation.legal.map((item) => (
-                    <li key={item.name}>
-                      <a
-                        href={item.href}
-                        className="text-sm/6 text-gray-600 hover:text-gray-900 dark:text-gray-400"
-                      >
-                        {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2">
+            <FooterLinkGroup title="Plataforma" items={navigation.plataforma} />
+            <FooterLinkGroup title="Soporte" items={navigation.soporte} />
+            <FooterLinkGroup title="Empresa" items={navigation.empresa} />
+            <FooterLinkGroup title="Legal" items={navigation.legal} />
           </div>
           <div className="mt-10 xl:mt-0">
             <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-              Subscribe to our newsletter
+              Suscríbete al newsletter
             </h3>
             <p className="mt-2 text-sm/6 text-gray-600 dark:text-gray-400">
-              The latest news, articles, and resources, sent to your inbox weekly.
+              Las últimas novedades y publicaciones, directo a tu correo.
             </p>
-            <form className="mt-6 sm:flex sm:max-w-md">
+            <form className="mt-4 sm:flex sm:max-w-md">
               <input
                 id="email-address"
                 name="email-address"
                 type="email"
                 required
-                placeholder="Enter your email"
+                placeholder="Tu email"
                 autoComplete="email"
-                className="w-full min-w-0 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:w-64 sm:text-sm/6 xl:w-full"
+                className="w-full min-w-0 rounded-xl bg-white px-4 py-2.5 text-sm text-gray-900 border border-gray-300 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 sm:w-64 xl:w-full dark:bg-dark-second dark:text-dark-txt dark:border-dark-third dark:placeholder:text-dark-txt-secondary"
               />
-              <div className="mt-4 sm:ml-4 sm:mt-0 sm:shrink-0">
+              <div className="mt-3 sm:ml-3 sm:mt-0 sm:shrink-0">
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  className="flex w-full items-center justify-center rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
                 >
-                  Subscribe
+                  Suscribirse
                 </button>
               </div>
             </form>
           </div>
         </div>
-        <div className="mt-16 border-t border-gray-900/10 pt-8 sm:mt-20 md:flex md:items-center md:justify-between lg:mt-24">
+        <div className="mt-12 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between dark:border-dark-third">
           <div className="flex gap-x-6 md:order-2">
             <DarkModeButton />
             {navigation.social.map((item) => (
-              <a key={item.name} href={item.href} className="text-gray-600 hover:text-gray-800">
+              <a
+                key={item.name}
+                href={item.href}
+                className="text-gray-500 hover:text-gray-700 dark:text-dark-txt-secondary dark:hover:text-dark-txt"
+              >
                 <span className="sr-only">{item.name}</span>
-                <item.icon aria-hidden="true" className="size-6" />
+                <item.icon aria-hidden="true" className="size-5" />
               </a>
             ))}
           </div>
-          <p className="mt-8 text-sm/6 text-gray-600 md:order-1 md:mt-0 dark:text-white">
-            &copy; 2024 Zerym Inc., Inc. All rights reserved.
+          <p className="mt-8 text-sm text-gray-500 md:order-1 md:mt-0 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} Echo. Todos los derechos reservados.
           </p>
         </div>
       </div>

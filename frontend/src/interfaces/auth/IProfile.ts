@@ -1,15 +1,15 @@
 export interface IProfile {
-  profile_picture: any;
-  profile_banner: any;
-  biography: any;
-  birthday: any;
-  website: any;
-  facebook: any;
-  twitter: any;
-  instagram: any;
-  github: any;
-  linkedin: any;
-  youtube: any;
-  tiktok: any;
-  snapchat: any;
+  profile_picture: string | null;
+  profile_banner: string | null;
+  biography: string;
+  birthday: string;
+  website: string;
+  facebook: string;
+  twitter: string;
+  instagram: string;
+  github: string;
+  linkedin: string;
+  youtube: string;
+  tiktok: string;
+  snapchat: string;
 }

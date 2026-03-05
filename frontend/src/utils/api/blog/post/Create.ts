@@ -18,7 +18,6 @@ export default async function createPost(props:CreatePostProps){
             },
             body: JSON.stringify(props)
         })
-        console.log(res)
         const data=await res.json();
         return data
         

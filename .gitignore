@@ -1,0 +1,4 @@
+# Variables de entorno (contienen secretos)
+.env
+.env.local
+.env.*.local

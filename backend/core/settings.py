@@ -7,7 +7,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-environ.Env.read_env()
+_env_file = BASE_DIR / ".env"
+if _env_file.exists():
+    environ.Env.read_env(env_file=_env_file)
+# En Docker las variables vienen de env_file en compose (raíz .env), no de este archivo
 
 
 # Quick-start development settings - unsuitable for production
@@ -17,7 +20,7 @@ environ.Env.read_env()
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
@@ -118,7 +121,7 @@ DATABASES = {
         'USER': env("DATABASE_USER"),
         'PASSWORD': env("DATABASE_PASSWORD"),
         'HOST': env("DATABASE_HOST"),
-        'PORT': 5432
+        'PORT': env("DATABASE_PORT"),
     }
 }
 
@@ -187,6 +190,14 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "30/min",
+        "user": "120/min",
+    },
 }
 
 
@@ -235,47 +246,45 @@ DJOSER = {
         "current_user": "apps.authentication.serializers.UserSerializer",
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
-    
-    'TEMPLATES': {
-        "activation": "email/auth/activation.html",
-        "confirmation": "email/auth/confirmation.html",
-        "password_reset": "email/auth/password_reset.html",
-        "password_changed_confirmation": "email/auth/password_changed_confirmation.html",
-        "username_changed_confirmation": "email/auth/username_changed_confirmation.html",
-        "username_reset": "email/auth/username_reset.html",
-    }
 }
 
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [env("REDIS_URL")]
+# Redis opcional: con USE_REDIS=false usamos caché en memoria (útil sin Redis en local)
+USE_REDIS = env.bool("USE_REDIS", default=True)
+REDIS_HOST = env("REDIS_HOST", default="localhost")
+
+if USE_REDIS:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [env("REDIS_URL", default="redis://localhost:6379/0")]},
         }
     }
-}
-
-REDIS_HOST=env("REDIS_HOST")
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": env("REDIS_URL", default="redis://localhost:6379/0"),
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+    }
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
 
-CHANNELS_ALLOWED_ORIGINS = "http://localhost:3000"
+CHANNELS_ALLOWED_ORIGINS = env("CHANNELS_ALLOWED_ORIGINS", default="http://localhost:3000,http://localhost:3006")
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = "America/Argentina/Buenos_Aires"
 
-CELERY_BROKER_URL = env("REDIS_URL")
+CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 3600,
@@ -297,16 +306,24 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.smtp.EmailBackend",
+)
 
-if not DEBUG:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+if DEBUG:
+    EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+    EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
+    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = False
+    DEFAULT_FROM_EMAIL = "Echo Dev <noreply@localhost>"
+else:
     EMAIL_HOST = env("EMAIL_HOST")
-    EMAIL_PORT = env("EMAIL_PORT")
+    EMAIL_PORT = env.int("EMAIL_PORT")
     EMAIL_HOST_USER = env("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = env("EMAIL_USE_TLS")== "True"
-    DEFAULT_FROM_EMAIL = "Zephira <no-reply@Zephira.finance>"
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+    DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Echo <noreply@echo.dev>")
     
 
 MEDIA_URL = '/media/'

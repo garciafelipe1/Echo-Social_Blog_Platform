@@ -7,8 +7,13 @@ import NavbarLink from "./NavbarLink";
 import RightMenuContainer from "./RightMenuContainer";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/reducers";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
-export default function DesktopNavbar() {
+interface Props {
+  onSearchClick?: () => void;
+}
+
+export default function DesktopNavbar({ onSearchClick }: Props) {
     
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
     
@@ -31,7 +36,17 @@ export default function DesktopNavbar() {
             <NavbarLink  href="/blog">Blog</NavbarLink>
           </div>
           {/* middle side */}
-          <div />
+          <button
+            type="button"
+            onClick={onSearchClick}
+            className="flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-400 transition hover:bg-gray-200 dark:bg-dark-second dark:text-dark-txt-secondary dark:hover:bg-dark-third"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Buscar...</span>
+            <kbd className="ml-2 hidden rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 sm:inline dark:bg-dark-third dark:text-dark-txt-secondary">
+              Ctrl+K
+            </kbd>
+          </button>
 
           {/* right side */}
           <RightMenuContainer>{isAuthenticated ?<AuthLinks /> :<GuestLinks />}</RightMenuContainer>

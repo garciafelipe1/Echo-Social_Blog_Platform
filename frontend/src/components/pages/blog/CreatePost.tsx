@@ -1,4 +1,4 @@
-import Button from "@/components/Buttom";
+import Button from "@/components/Button";
 import EditImage from "@/components/forms/EditImage";
 import EditKeywords from "@/components/forms/EditKeywords";
 import EditRichText from "@/components/forms/EditRichText";
@@ -8,141 +8,82 @@ import EditText from "@/components/forms/EditText";
 import LoadingMoon from "@/components/loaders/LoadingMoon";
 import { ToastError, ToastSuccess } from "@/components/toast/toast";
 import { ICategoryList } from "@/interfaces/blog/ICategory";
-import createPost, { CreatePostProps } from "@/utils/api/blog/post/Create";
+import usePostForm, { buildPostFormData, isRichTextEmpty } from "@/hooks/usePostForm";
 
-
-
-
-import { useState } from "react";
-
-
-interface ComponentProps{
-    categories:ICategoryList[]
-    loadingCategories:boolean;
+interface ComponentProps {
+  categories: ICategoryList[];
+  loadingCategories: boolean;
 }
 
-
-
-
 export default function CreatePost({ categories, loadingCategories }: ComponentProps) {
-  const [title, setTitle] = useState<string>('');
-  const [description, setdescription] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [keywords, setKeywords] = useState<string>('');
-  const [slug, setSlug] = useState<string>('');
-  const [category, setCategory] = useState<string>('');
-  const[status,setStatus]=useState<string>('draft');
+  const form = usePostForm('published');
 
-  const [thumbnail, setThumbnail] = useState<any>(null);
-  const [percentage, setPercentage] = useState<number>(0);
-  const[hasChangesThumbnail, setHasChangesThumbnail] = useState<boolean>(false);
-  const [uploadingProfilePicture, setUploadingThubnail] = useState<boolean>(false);
-  const[loading,setLoading]=useState<boolean>(false)
-  
-  const onLoadThumbnail = (newImage: any) => {
-    if (newImage?.file !== thumbnail?.file) {
-      setThumbnail(newImage);
-      setHasChangesThumbnail(true);
-      console.log('Actualización de profilePicture:', newImage);
-    }
-  };
-  
-  const isEmpty = (str: string) => {
-    const CleanedContent = str.replace(/<[^>]+>/g, '').trim();
-    return CleanedContent === '';
-  };
-  
-
-  
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    
     e.preventDefault();
-    if (isEmpty(content)) {
+    if (isRichTextEmpty(form.content)) {
       ToastError('Content cannot be empty');
-      return null;
+      return;
     }
-    setLoading(true);
+    if (!form.category?.trim()) {
+      ToastError('Please select a category');
+      return;
+    }
+    form.setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('content', content);
-      formData.append('keywords', keywords);
-      formData.append('slug', slug);
-      formData.append('category', category);
-      formData.append('status', status);
-
-      if (thumbnail?.file) {
-        formData.append(
-          'thumbnail',
-          thumbnail.file,
-          `thumbnail_${Date.now()}_${thumbnail.file.name.replace(/\s/g, '_')}`,
-        );
-      }
-
+      const formData = buildPostFormData(form);
       const res = await fetch('/api/blog/post/create/', {
-        // ¡Llamamos a nuestra API Route!
         method: 'POST',
         body: formData,
       });
 
       const data = await res.json();
-      
-      if (res.ok) {
-        ToastSuccess(data.results || `Post '${title}' created successfully!`);
-        // Limpiar los campos del formulario después de la publicación exitosa
-        setTitle('');
-        setdescription('');
-        setContent('');
-        setKeywords('');
-        setSlug('');
-        setCategory('');
-        setStatus('draft'); // O el estado inicial que desees
-        setThumbnail(null); // Restablecer la imagen seleccionada
 
-        // ...
+      if (res.ok) {
+        ToastSuccess(data.results || `Post '${form.title}' created successfully!`);
+        form.resetForm();
       } else {
         ToastError(data.error || `Failed to create post: ${res.statusText}`);
       }
     } catch (error) {
       ToastError('An unexpected error occurred while creating the post.');
-      console.error('Frontend error creating post:', error);
     } finally {
-      setLoading(false);
+      form.setLoading(false);
     }
-
   };
 
   return (
-    <form onSubmit={handleOnSubmit} className="space-y-4">
-      <EditText title="Title" data={title} setData={setTitle} required />
-      <EditText title="Description" data={description} setData={setdescription} required />
-      <EditRichText title="Content" data={content} setData={setContent} />
+    <form onSubmit={handleOnSubmit} className="space-y-5">
+      <EditText title="Titulo" data={form.title} setData={form.setTitle} required />
+      <EditText title="Descripcion" data={form.description} setData={form.setDescription} required />
+      <EditRichText title="Contenido" data={form.content} setData={form.setContent} />
       <EditImage
-        onLoad={onLoadThumbnail}
-        title="Thumbail"
-        data={thumbnail}
-        setData={setThumbnail}
-        percentage={percentage}
+        onLoad={form.onLoadThumbnail}
+        title="Imagen"
+        data={form.thumbnail}
+        setData={form.setThumbnail}
       />
-      <EditKeywords title="Keywords" data={keywords} setData={setKeywords} required />
-      <EditSlug title="Slug" data={slug} setData={setSlug} required />
-      <EditSelect
-        title="Category"
-        data={category}
-        setData={setCategory}
-        disabled={loadingCategories}
-        options={categories.map((cat) => cat.slug)}
-        placeholder="Select a category"
-      />
-      <EditSelect
-        title="Status"
-        data={status}
-        setData={setStatus}
-        options={['draft', 'published']}
-        placeholder="Select status"
-      />
-      <Button type="submit">{loading ? <LoadingMoon /> : 'Create Post'}</Button>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <EditKeywords title="Keywords" data={form.keywords} setData={form.setKeywords} required />
+        <EditSlug title="Slug" data={form.slug} setData={form.setSlug} required />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <EditSelect
+          title="Categoria"
+          data={form.category}
+          setData={form.setCategory}
+          disabled={loadingCategories}
+          options={categories.map((cat) => cat.slug)}
+          placeholder="Selecciona categoria"
+        />
+        <EditSelect
+          title="Estado"
+          data={form.status}
+          setData={form.setStatus}
+          options={['draft', 'published']}
+          placeholder="Selecciona estado"
+        />
+      </div>
+      <Button type="submit">{form.loading ? <LoadingMoon /> : 'Crear post'}</Button>
     </form>
   );
 }

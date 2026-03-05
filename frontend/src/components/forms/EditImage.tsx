@@ -3,12 +3,31 @@ import ReactDropzone from 'react-dropzone';
 import { Line } from 'rc-progress';
 import Image from 'next/image';
 import { ToastError } from '../toast/toast';
+import {
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_IMAGE_SIZE_LABEL,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_IMAGE_EXTENSIONS,
+  PLACEHOLDER_IMAGE,
+  PROGRESS_COLOR_INCOMPLETE,
+  PROGRESS_COLOR_COMPLETE,
+  PROGRESS_THRESHOLD,
+} from '@/constants/uploads';
+
+export interface ImageData {
+  id: string;
+  title: string;
+  file: File | string;
+  size: string;
+  type: string;
+  lastModified: number;
+}
 
 interface ComponentProps {
   encoding?: string;
-  data: any;
-  setData: any;
-  onLoad?: any;
+  data: ImageData | string | null;
+  setData: (data: ImageData) => void;
+  onLoad?: ((data: ImageData) => void) | null;
   percentage?: number;
   variant?: string;
   title?: string;
@@ -27,19 +46,17 @@ export default function EditImage({
   
 }: ComponentProps) {
   
-  const handleDrop = (acceptedFiles: any) => {
+  const handleDrop = (acceptedFiles: File[]) => {
     const acceptedFile = acceptedFiles[0];
 
-    if (acceptedFile.size > 2 * 1024 * 1024) {
-      ToastError('Image must be Max 2MB');
+    if (acceptedFile.size > MAX_IMAGE_SIZE_BYTES) {
+      ToastError(`Image must be max ${MAX_IMAGE_SIZE_LABEL}`);
       return;
     }
 
-    const allowedFileTypes = ['image/jpeg', 'image/png'];
-
-    if (!allowedFileTypes.includes(acceptedFile.type)) {
+    if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(acceptedFile.type)) {
       ToastError(
-        `${acceptedFile.type} is not allowed. Only .jpg, .jpeg or .png extensions are allowed`,
+        `${acceptedFile.type} is not allowed. Only ${ALLOWED_IMAGE_EXTENSIONS} extensions are allowed`,
       );
       return;
     }
@@ -116,10 +133,9 @@ export default function EditImage({
       return URL.createObjectURL(data.file);
     }
 
-    return '/assets/img/placeholder/balu_lpAHdz5.jpg';
+    return PLACEHOLDER_IMAGE;
   };
   const srcUrl = getSrcUrl();
-  console.log(srcUrl)
 
   const normalStyle = <div>Normal style</div>;
 
@@ -158,7 +174,7 @@ export default function EditImage({
           <Line
             percent={percentage}
             strokeWidth={2}
-            strokeColor={percentage < 70 ? '#e6007a' : '#b1fec5'}
+            strokeColor={percentage < PROGRESS_THRESHOLD ? PROGRESS_COLOR_INCOMPLETE : PROGRESS_COLOR_COMPLETE}
           />
         </div>
       </div>
@@ -202,7 +218,7 @@ export default function EditImage({
             <Line
               percent={percentage}
               strokeWidth={2}
-              strokeColor={percentage < 70 ? '#e6007a' : '#b1fec5'}
+              strokeColor={percentage < PROGRESS_THRESHOLD ? PROGRESS_COLOR_INCOMPLETE : PROGRESS_COLOR_COMPLETE}
             />
           </div>
         </div>

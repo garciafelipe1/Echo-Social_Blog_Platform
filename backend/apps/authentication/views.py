@@ -13,7 +13,7 @@ from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from django.core.mail import send_mail
-from django.contrib.sites.models import Site
+from apps.authentication.emails import render_otp_email
 from rest_framework.permissions import AllowAny
 from utils.string_utils import sanitize_string,sanitize_username
 
@@ -69,16 +69,13 @@ class GenerateQRCodeView(StandardAPIView):
         return self.response(qr_code.url)
     
 class OTPLoginResetView(StandardAPIView):
-    permissions_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post (self,request):
         user = request.user
         
         new_ip=get_client_ip
         
-        if user.login_ip and user.login_ip != new_ip:
-            print(f"New Login IP user{user.email}")
-            
         user.login_ip=new_ip
         
         if user.qr_code is None or user.otp_base32 is None:
@@ -97,7 +94,7 @@ class OTPLoginResetView(StandardAPIView):
 
 
 class VerifyOTPView(StandardAPIView):
-    permissions_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
@@ -118,7 +115,7 @@ class VerifyOTPView(StandardAPIView):
             return self.error("Error Verifiying one time Password")
         
 class DisableOTPView(StandardAPIView):
-    permissions_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         user = request.user
@@ -144,8 +141,8 @@ class DisableOTPView(StandardAPIView):
             return self.error("Error Verifiying one time Password")
 
 
-class Set2FAView(StandardAPIView):  # Define una vista llamada Set2FAView, heredando de StandardAPIView
-    permissions_classes = [permissions.IsAuthenticated]  # Configura los permisos: solo usuarios autenticados pueden acceder
+class Set2FAView(StandardAPIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):  # Define el método POST para manejar las solicitudes POST
         user = request.user  # Obtiene el usuario autenticado de la solicitud
@@ -165,7 +162,7 @@ class Set2FAView(StandardAPIView):  # Define una vista llamada Set2FAView, hered
             return self.response("2FA DEACTIVATED")  # Devuelve una respuesta de éxito (asumiendo self.response existe)
 
 class OTPLoginView(StandardAPIView):
-    permissions_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         email=request.data.get("email")
@@ -228,14 +225,20 @@ class VerifyOTPLoginView(StandardAPIView):
         
 class SendOTPLoginView(StandardAPIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get('email')
+        if not email or not str(email).strip():
+            return self.error("Email is required.", status=status.HTTP_400_BAD_REQUEST)
 
-        # Verificar que existe un suario con ese email y que eestaa activo
+        # Verificar que existe un usuario con ese email y que está activo
         try:
-            user = User.objects.get(email=email, is_active=True)
+            user = User.objects.get(email=email.strip(), is_active=True)
         except User.DoesNotExist:
-            return self.error("User does not exist or is not active.")
+            return self.error(
+                "User does not exist or is not active. Activate your account via the link sent to your email.",
+                status=status.HTTP_404_NOT_FOUND,
+            )
         
         # Generar OTP
         secret = pyotp.random_base32()
@@ -245,16 +248,12 @@ class SendOTPLoginView(StandardAPIView):
         totp = pyotp.TOTP(secret)
         otp = totp.now()
 
-        # Enviar correo con OTP
-        # Obtener el dominio del sitio configurado
-        site = Site.objects.get_current()
-        domain = site.domain
-
         send_mail(
-            'Your OTP Code',
-            f'Your OTP code is {otp}',
-            f'noreply@{domain}',
-            [email],
+            subject='Tu código de acceso — Echo',
+            message=f'Tu código OTP es: {otp}',
+            from_email=None,
+            recipient_list=[email],
+            html_message=render_otp_email(otp, user.get_username()),
             fail_silently=False,
         )
 

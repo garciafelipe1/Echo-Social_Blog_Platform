@@ -6,6 +6,7 @@ from .views import(
     PostHeadingsView,
     GenerateFakeAnalyticsView,
     GenerateFakePostView,
+    GenerateDemoUsersView,
     CategoryListView,
     IncrementCategoryClicksView,
     CategoryDetailView,
@@ -19,6 +20,7 @@ from .views import(
     DetailPostView,
     CategoriesListView,
     AuthorPostListView,
+    GlobalSearchView,
 ) 
 
 urlpatterns = [
@@ -27,6 +29,7 @@ urlpatterns = [
     path('posts/increment_clicks/', IncrementPostView.as_view(), name="increment-post-click"),
     path('post/headings/', PostHeadingsView.as_view(), name="post-headings"),
     path('generate_post/', GenerateFakePostView.as_view()),
+    path('generate_demo_users/', GenerateDemoUsersView.as_view()),
     path('generate_analytics/', GenerateFakeAnalyticsView.as_view()),
     path('categories/', CategoryListView.as_view(), name="category-list"),
     path('categories/list/', CategoriesListView.as_view()),
@@ -42,4 +45,5 @@ urlpatterns = [
     path('post/author/',PostAuthorViews.as_view()),
     path('post/get/',DetailPostView.as_view()),
     path('post/author/list/', AuthorPostListView.as_view(), name="author-post-list"),
+    path('search/', GlobalSearchView.as_view(), name="global-search"),
 ]

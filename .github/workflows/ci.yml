@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  backend:
+    name: Backend (Django)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: django
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: django_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Django check
+        working-directory: backend
+        env:
+          SECRET_KEY: ci-secret-key-for-testing-only
+          DEBUG: 'True'
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          CORS_ORIGIN_WHITELIST: http://localhost:3000
+          CSRF_TRUSTED_ORIGINS: http://localhost:3000
+          DATABASE_NAME: django_db
+          DATABASE_USER: django
+          DATABASE_PASSWORD: postgres
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          USE_REDIS: 'true'
+          REDIS_HOST: localhost
+          REDIS_URL: redis://localhost:6379/0
+          EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+        run: python manage.py check
+
+      - name: Run migrations
+        working-directory: backend
+        env:
+          SECRET_KEY: ci-secret-key-for-testing-only
+          DEBUG: 'True'
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          CORS_ORIGIN_WHITELIST: http://localhost:3000
+          CSRF_TRUSTED_ORIGINS: http://localhost:3000
+          DATABASE_NAME: django_db
+          DATABASE_USER: django
+          DATABASE_PASSWORD: postgres
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          USE_REDIS: 'true'
+          REDIS_HOST: localhost
+          REDIS_URL: redis://localhost:6379/0
+          EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+        run: python manage.py migrate --noinput
+
+      - name: Run Django tests
+        working-directory: backend
+        env:
+          SECRET_KEY: ci-secret-key-for-testing-only
+          DEBUG: 'True'
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          CORS_ORIGIN_WHITELIST: http://localhost:3000
+          CSRF_TRUSTED_ORIGINS: http://localhost:3000
+          DATABASE_NAME: django_db
+          DATABASE_USER: django
+          DATABASE_PASSWORD: postgres
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          USE_REDIS: 'true'
+          REDIS_HOST: localhost
+          REDIS_URL: redis://localhost:6379/0
+          EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+        run: python manage.py test --verbosity=2
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          API_URL: http://localhost:7000
+          NEXT_PUBLIC_API_URL: http://localhost:7000

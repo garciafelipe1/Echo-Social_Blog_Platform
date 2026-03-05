@@ -7,9 +7,8 @@ type Data = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: `Method ${req.method} not allowed`,
-    });
+    res.status(405).json({ error: `Method ${req.method} not allowed` });
+    return;
   }
 
   try {
@@ -22,10 +21,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       body: JSON.stringify(req.body),
     });
 
-    return res.status(apiRes.status).json({ name: 'email sent successfuly' });
+    if (apiRes.status === 204) {
+      res.status(204).end();
+      return;
+    }
+    const data = await apiRes.json().catch(() => ({}));
+    res.status(apiRes.status).json(data);
+    return;
   } catch (err) {
-    return res.status(500).json({
-      error: 'Something went wrong',
-    });
+    res.status(500).json({ error: 'Something went wrong' });
+    return;
   }
 }

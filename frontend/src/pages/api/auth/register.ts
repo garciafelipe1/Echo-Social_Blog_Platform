@@ -24,8 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       body: JSON.stringify(req.body),
     });
 
-    console.log(apiRes)
-
     const data = await apiRes.json();
     return res.status(apiRes.status).json(data);
   } catch (err) {

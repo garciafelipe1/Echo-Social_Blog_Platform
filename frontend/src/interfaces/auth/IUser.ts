@@ -1,5 +1,5 @@
-username: 'luis';
 export interface IUser {
+  username: string;
   first_name: string;
   last_name: string;
   role: string;
@@ -11,6 +11,5 @@ export interface IUser {
   login_otp_used: boolean;
   otp_created_at: string;
   qr_code: string;
-  profile_picture:string
-  username:string
+  profile_picture: string;
 }

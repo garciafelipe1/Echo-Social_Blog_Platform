@@ -1,5 +1,5 @@
 export interface ICategory {
-  parent: any;
+  parent: ICategory | null;
   name: string;
   title: string;
   description: string;

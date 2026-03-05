@@ -1,6 +1,7 @@
 import { logout } from '@/redux/actions/auth/actions';
 
 import userin from '@/utils/images/userin.png';
+import { mediaUrl } from '@/utils/mediaUrl';
 import { RootState } from '@/redux/reducers';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import Image from 'next/image';
@@ -9,6 +10,7 @@ import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import { UnknownAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 export default function AuthLinks() {
   const profile = useSelector((state: RootState) => state.auth.profile);
@@ -21,13 +23,14 @@ export default function AuthLinks() {
     router.push('/');
   };
    const profilePictureUrl = profile?.profile_picture
-     ? `http://127.0.0.1:8004${profile.profile_picture}`
+     ? mediaUrl(profile.profile_picture)
      : userin;
 
 
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
+      <NotificationBell />
       <Menu as="div" className="relative inline-block text-left">
         <MenuButton>
           <Image

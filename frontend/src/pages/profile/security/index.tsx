@@ -1,7 +1,7 @@
 import Layout from '@/hocs/Layout';
 import { ReactElement, useEffect, useState } from 'react';
 import Container from '@/components/pages/profile/Container';
-import Button from '@/components/Buttom';
+import Button from '@/components/Button';
 import LoadingMoon from '@/components/loaders/LoadingMoon';
 import EditPassword from '@/components/forms/EditPassword';
 import usePasswordValidation from '@/hooks/usePasswordValidation';

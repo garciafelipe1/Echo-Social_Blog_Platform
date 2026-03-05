@@ -32,8 +32,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
 
     const data = await apiRes.json();
-    // console.log('Full data from backend in /api/auth/profile:', data); // <--- LOG CRUCIAL
-
     return res.status(apiRes.status).json(data);
   } catch (err) {
     return res.status(500).json({

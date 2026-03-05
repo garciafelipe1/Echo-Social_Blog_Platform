@@ -1,4 +1,4 @@
-import Botton from '@/components/Buttom';
+import Button from '@/components/Button';
 import EditPassword from '@/components/forms/EditPassword';
 import LoadingMoon from '@/components/loaders/LoadingMoon';
 import { ToastError} from '@/components/toast/toast';
@@ -72,9 +72,9 @@ export default function Page() {
             required
           />
           {PasswordValidationText()}
-          <Botton disabled={loading} hoverEffect={!loading} type="submit">
+          <Button disabled={loading} hoverEffect={!loading} type="submit">
             {loading ? <LoadingMoon /> : 'Change password'}
-          </Botton>
+          </Button>
         </form>
       </div>
     </div>
