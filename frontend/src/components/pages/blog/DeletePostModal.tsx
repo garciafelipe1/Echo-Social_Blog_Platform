@@ -1,8 +1,6 @@
-
 import LoadingMoon from '@/components/loaders/LoadingMoon';
 import { IPostsList } from '@/interfaces/blog/IPost';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
-
 
 interface ComponentProps {
   open: boolean;
@@ -12,9 +10,13 @@ interface ComponentProps {
   loadingDelete: boolean;
 }
 
-
-export default function DeletPostModal({open, setOpen,post,handleDelete,loadingDelete}:ComponentProps) {
-  
+export default function DeletPostModal({
+  open,
+  setOpen,
+  post,
+  handleDelete,
+  loadingDelete,
+}: ComponentProps) {
   return (
     <Dialog open={open} onClose={setOpen} className="relative z-10">
       <DialogBackdrop
@@ -34,9 +36,7 @@ export default function DeletPostModal({open, setOpen,post,handleDelete,loadingD
                   are you sure you want delete this post?
                 </DialogTitle>
                 <div className="mt-2">
-                  <p className="text-sm text-gray-500">
-                     {post?.title}
-                  </p>
+                  <p className="text-sm text-gray-500">{post?.title}</p>
                 </div>
               </div>
             </div>
@@ -44,15 +44,10 @@ export default function DeletPostModal({open, setOpen,post,handleDelete,loadingD
               <button
                 type="button"
                 disabled={loadingDelete}
-                onClick={()=>handleDelete?.(post?.slug!)}
-                className="inline-flex w-full justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-900 focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() => handleDelete?.(post?.slug!)}
+                className="inline-flex w-full justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-900 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                {
-                    loadingDelete ? 
-                    <LoadingMoon/> :"Delete Posst"
-                
-                }
-                 
+                {loadingDelete ? <LoadingMoon /> : 'Delete Post'}
               </button>
             </div>
           </DialogPanel>

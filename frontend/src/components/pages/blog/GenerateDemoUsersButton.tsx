@@ -12,7 +12,12 @@ export default function GenerateDemoUsersButton() {
       if (res.ok) {
         ToastSuccess(data?.message ?? data?.response ?? 'Usuarios de prueba creados.');
       } else {
-        const msg = data?.response ?? data?.error ?? data?.detail ?? data?.message ?? 'Error al generar usuarios';
+        const msg =
+          data?.response ??
+          data?.error ??
+          data?.detail ??
+          data?.message ??
+          'Error al generar usuarios';
         ToastError(typeof msg === 'string' ? msg : 'Error al generar usuarios');
       }
     } catch {

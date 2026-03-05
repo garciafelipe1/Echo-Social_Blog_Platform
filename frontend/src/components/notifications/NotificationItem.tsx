@@ -2,11 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import moment from 'moment';
 import { mediaUrl } from '@/utils/mediaUrl';
-import {
-  HeartIcon,
-  ChatBubbleOvalLeftIcon,
-  UserPlusIcon,
-} from '@heroicons/react/24/solid';
+import { HeartIcon, ChatBubbleOvalLeftIcon, UserPlusIcon } from '@heroicons/react/24/solid';
 import type { INotification } from '@/hooks/useNotifications';
 
 const TYPE_CONFIG: Record<
@@ -53,7 +49,7 @@ export default function NotificationItem({ notification, onClose }: Props) {
     <Link
       href={href}
       onClick={onClose}
-      className={`flex items-start gap-3 px-4 py-3 transition hover:bg-gray-50 dark:hover:bg-dark-second ${
+      className={`dark:hover:bg-dark-second flex items-start gap-3 px-4 py-3 transition hover:bg-gray-50 ${
         !notification.is_read ? 'bg-violet-50/50 dark:bg-violet-900/10' : ''
       }`}
     >
@@ -68,7 +64,7 @@ export default function NotificationItem({ notification, onClose }: Props) {
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500 dark:bg-dark-third dark:text-dark-txt-secondary">
+          <span className="dark:bg-dark-third dark:text-dark-txt-secondary flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">
             {notification.sender.username?.charAt(0)?.toUpperCase() || '?'}
           </span>
         )}
@@ -76,19 +72,17 @@ export default function NotificationItem({ notification, onClose }: Props) {
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-gray-800 dark:text-dark-txt">
+        <p className="dark:text-dark-txt text-sm text-gray-800">
           <span className="font-semibold">{notification.sender.username}</span>{' '}
           {config.getText(notification)}
         </p>
-        <p className="mt-0.5 text-xs text-gray-400 dark:text-dark-txt-secondary">
+        <p className="dark:text-dark-txt-secondary mt-0.5 text-xs text-gray-400">
           {moment(notification.created_at).fromNow()}
         </p>
       </div>
 
       {/* Type icon */}
-      <div className={`shrink-0 rounded-full p-1.5 ${config.color}`}>
-        {config.icon}
-      </div>
+      <div className={`shrink-0 rounded-full p-1.5 ${config.color}`}>{config.icon}</div>
     </Link>
   );
 }

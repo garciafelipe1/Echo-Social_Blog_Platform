@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             reject(err);
             return;
           }
-          
+
           resolve({ fields, files });
         });
       },
@@ -90,8 +90,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       },
       body: djangoFormData as any,
     });
-
-    
 
     const data = await apiRes.json();
     return res.status(apiRes.status).json(data);

@@ -36,7 +36,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
   return (
     <Container>
       {/* Top bar */}
-      <header className="flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-dark-third">
+      <header className="dark:border-dark-third flex items-center justify-between border-b border-gray-200 px-4 py-2">
         <Link href="/">
           <Image
             src="/assets/img/logos/F.png"
@@ -51,7 +51,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
           <button
             type="button"
             onClick={onSearchClick}
-            className="rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-dark-txt dark:hover:bg-dark-third"
+            className="dark:text-dark-txt dark:hover:bg-dark-third rounded-full p-2 text-gray-600 hover:bg-gray-100"
             aria-label="Buscar"
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
@@ -59,7 +59,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-dark-txt dark:hover:bg-dark-third"
+            className="dark:text-dark-txt dark:hover:bg-dark-third rounded-full p-2 text-gray-600 hover:bg-gray-100"
             aria-label="Menu"
           >
             {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
@@ -75,14 +75,14 @@ export default function MobileNavbar({ onSearchClick }: Props) {
             onClick={() => setMenuOpen(false)}
             aria-hidden
           />
-          <nav className="fixed inset-x-0 top-0 z-50 max-h-[85vh] overflow-y-auto rounded-b-2xl bg-white shadow-xl dark:bg-dark-main">
+          <nav className="dark:bg-dark-main fixed inset-x-0 top-0 z-50 max-h-[85vh] overflow-y-auto rounded-b-2xl bg-white shadow-xl">
             {/* Menu header */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-dark-third">
-              <span className="text-sm font-bold text-gray-900 dark:text-dark-txt">Menu</span>
+            <div className="dark:border-dark-third flex items-center justify-between border-b border-gray-100 px-4 py-3">
+              <span className="dark:text-dark-txt text-sm font-bold text-gray-900">Menu</span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
-                className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-third"
+                className="dark:hover:bg-dark-third rounded-full p-1.5 text-gray-400 hover:bg-gray-100"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
@@ -93,7 +93,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
               <Link
                 href={`/@/${user.username}`}
                 onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 border-b border-gray-100 px-4 py-4 dark:border-dark-third"
+                className="dark:border-dark-third flex items-center gap-3 border-b border-gray-100 px-4 py-4"
               >
                 {profile?.profile_picture ? (
                   <Image
@@ -109,7 +109,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
                   </span>
                 )}
                 <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-dark-txt">
+                  <p className="dark:text-dark-txt text-sm font-semibold text-gray-900">
                     {user.first_name || user.username}
                   </p>
                   <p className="text-xs text-gray-400">@{user.username}</p>
@@ -141,9 +141,9 @@ export default function MobileNavbar({ onSearchClick }: Props) {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-[15px] text-gray-700 transition hover:bg-gray-50 dark:text-dark-txt dark:hover:bg-dark-second"
+                  className="dark:text-dark-txt dark:hover:bg-dark-second flex items-center gap-3 px-4 py-3 text-[15px] text-gray-700 transition hover:bg-gray-50"
                 >
-                  <item.icon className="h-5 w-5 text-gray-400 dark:text-dark-txt-secondary" />
+                  <item.icon className="dark:text-dark-txt-secondary h-5 w-5 text-gray-400" />
                   {item.label}
                 </Link>
               ))}
@@ -153,11 +153,11 @@ export default function MobileNavbar({ onSearchClick }: Props) {
       )}
 
       {/* Bottom tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-md dark:border-dark-third dark:bg-dark-main/95">
+      <nav className="dark:border-dark-third dark:bg-dark-main/95 fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-around py-1.5">
           <Link
             href="/"
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 ${isActive('/') ? 'text-violet-600' : 'text-gray-500 dark:text-dark-txt-secondary'}`}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 ${isActive('/') ? 'text-violet-600' : 'dark:text-dark-txt-secondary text-gray-500'}`}
           >
             {isActive('/') ? (
               <HomeIconSolid className="h-6 w-6" />
@@ -170,7 +170,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
           <button
             type="button"
             onClick={onSearchClick}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500 dark:text-dark-txt-secondary"
+            className="dark:text-dark-txt-secondary flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500"
           >
             <MagnifyingGlassIcon className="h-6 w-6" />
             <span className="text-[10px] font-medium">Buscar</span>
@@ -180,7 +180,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
             <>
               <Link
                 href="/bookmarks"
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 ${isActive('/bookmarks') ? 'text-violet-600' : 'text-gray-500 dark:text-dark-txt-secondary'}`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1 ${isActive('/bookmarks') ? 'text-violet-600' : 'dark:text-dark-txt-secondary text-gray-500'}`}
               >
                 <BookmarkIcon className="h-6 w-6" />
                 <span className="text-[10px] font-medium">Guardados</span>
@@ -188,7 +188,7 @@ export default function MobileNavbar({ onSearchClick }: Props) {
 
               <Link
                 href={`/@/${user?.username || ''}`}
-                className="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500 dark:text-dark-txt-secondary"
+                className="dark:text-dark-txt-secondary flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500"
               >
                 {profile?.profile_picture ? (
                   <Image
@@ -208,14 +208,14 @@ export default function MobileNavbar({ onSearchClick }: Props) {
             <>
               <Link
                 href="/login"
-                className="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500 dark:text-dark-txt-secondary"
+                className="dark:text-dark-txt-secondary flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500"
               >
                 <ArrowRightOnRectangleIcon className="h-6 w-6" />
                 <span className="text-[10px] font-medium">Login</span>
               </Link>
               <Link
                 href="/register"
-                className="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500 dark:text-dark-txt-secondary"
+                className="dark:text-dark-txt-secondary flex flex-col items-center gap-0.5 px-3 py-1 text-gray-500"
               >
                 <UserIcon className="h-6 w-6" />
                 <span className="text-[10px] font-medium">Registro</span>

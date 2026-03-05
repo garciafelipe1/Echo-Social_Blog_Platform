@@ -17,10 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['Authorization'] = `JWT ${accessToken}`;
     }
 
-    const apiRes = await fetch(
-      `${baseUrl}/api/blog/posts/?${buildQueryString(req.query)}`,
-      { method: 'GET', headers }
-    );
+    const apiRes = await fetch(`${baseUrl}/api/blog/posts/?${buildQueryString(req.query)}`, {
+      method: 'GET',
+      headers,
+    });
     const contentType = apiRes.headers.get('content-type');
     const data = contentType?.includes('application/json')
       ? await apiRes.json()

@@ -1,14 +1,14 @@
-import Button from "@/components/Button";
-import EditImage from "@/components/forms/EditImage";
-import EditKeywords from "@/components/forms/EditKeywords";
-import EditRichText from "@/components/forms/EditRichText";
-import EditSelect from "@/components/forms/EditSelect";
-import EditSlug from "@/components/forms/EditSlug";
-import EditText from "@/components/forms/EditText";
-import LoadingMoon from "@/components/loaders/LoadingMoon";
-import { ToastError, ToastSuccess } from "@/components/toast/toast";
-import { ICategoryList } from "@/interfaces/blog/ICategory";
-import usePostForm, { buildPostFormData, isRichTextEmpty } from "@/hooks/usePostForm";
+import Button from '@/components/Button';
+import EditImage from '@/components/forms/EditImage';
+import EditKeywords from '@/components/forms/EditKeywords';
+import EditRichText from '@/components/forms/EditRichText';
+import EditSelect from '@/components/forms/EditSelect';
+import EditSlug from '@/components/forms/EditSlug';
+import EditText from '@/components/forms/EditText';
+import LoadingMoon from '@/components/loaders/LoadingMoon';
+import { ToastError, ToastSuccess } from '@/components/toast/toast';
+import { ICategoryList } from '@/interfaces/blog/ICategory';
+import usePostForm, { buildPostFormData, isRichTextEmpty } from '@/hooks/usePostForm';
 
 interface ComponentProps {
   categories: ICategoryList[];
@@ -54,7 +54,12 @@ export default function CreatePost({ categories, loadingCategories }: ComponentP
   return (
     <form onSubmit={handleOnSubmit} className="space-y-5">
       <EditText title="Titulo" data={form.title} setData={form.setTitle} required />
-      <EditText title="Descripcion" data={form.description} setData={form.setDescription} required />
+      <EditText
+        title="Descripcion"
+        data={form.description}
+        setData={form.setDescription}
+        required
+      />
       <EditRichText title="Contenido" data={form.content} setData={form.setContent} />
       <EditImage
         onLoad={form.onLoadThumbnail}

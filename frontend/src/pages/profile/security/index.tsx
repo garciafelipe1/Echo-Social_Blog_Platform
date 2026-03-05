@@ -9,8 +9,10 @@ import { ToastError, ToastSuccess } from '@/components/toast/toast';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import verifyAccess from '@/utils/api/auth/VerifyAccess';
 
-export const getServerSideProps:GetServerSideProps = async (context:GetServerSidePropsContext) => {
-  const {Verified} = await verifyAccess(context);
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  const { Verified } = await verifyAccess(context);
 
   if (!Verified) {
     return {
@@ -18,18 +20,17 @@ export const getServerSideProps:GetServerSideProps = async (context:GetServerSid
         destination: '/',
         permanent: false,
       },
-    }
+    };
   }
   return {
-    props: { 
-       },
+    props: {},
   };
-}
+};
 export default function Page() {
-  const[loading, setLoading] = useState<boolean>(false)
-  const[currentPassword, setCurrentPassword] = useState<string>('')
-  const[newPassword, setNewPassword] = useState<string>('')
-  const[repeatNewPassword, setRepeatNewPassword] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [repeatNewPassword, setRepeatNewPassword] = useState<string>('');
 
   const { canSubmit, PasswordValidationText } = usePasswordValidation({
     password: newPassword,
@@ -40,34 +41,32 @@ export default function Page() {
       ToastError('must fill all requierements passwords');
       return null;
     }
-    
-    try {
-        setLoading(true)
-        const res = await fetch('/api/auth/change_password', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            new_password: newPassword,
-            re_new_password: repeatNewPassword,
-            current_password: currentPassword,
-          }),
-        });
 
-        if (res.status === 204) {
-          ToastSuccess('your password has been updated');
-        }
-        
+    try {
+      setLoading(true);
+      const res = await fetch('/api/auth/change_password', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          new_password: newPassword,
+          re_new_password: repeatNewPassword,
+          current_password: currentPassword,
+        }),
+      });
+
+      if (res.status === 204) {
+        ToastSuccess('your password has been updated');
+      }
     } catch (error) {
-        ToastError('error changing password');
+      ToastError('error changing password');
+    } finally {
+      setLoading(false);
     }
-    finally{
-        setLoading(false)
-    }
-  }
-    
+  };
+
   return (
     <Container>
       <div>

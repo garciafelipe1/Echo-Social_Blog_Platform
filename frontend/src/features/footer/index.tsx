@@ -135,7 +135,7 @@ export default function Footer() {
                 required
                 placeholder="Tu email"
                 autoComplete="email"
-                className="w-full min-w-0 rounded-xl bg-white px-4 py-2.5 text-sm text-gray-900 border border-gray-300 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 sm:w-64 xl:w-full dark:bg-dark-second dark:text-dark-txt dark:border-dark-third dark:placeholder:text-dark-txt-secondary"
+                className="dark:bg-dark-second dark:text-dark-txt dark:border-dark-third dark:placeholder:text-dark-txt-secondary w-full min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 sm:w-64 xl:w-full"
               />
               <div className="mt-3 sm:ml-3 sm:mt-0 sm:shrink-0">
                 <button
@@ -148,14 +148,14 @@ export default function Footer() {
             </form>
           </div>
         </div>
-        <div className="mt-12 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between dark:border-dark-third">
+        <div className="dark:border-dark-third mt-12 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
           <div className="flex gap-x-6 md:order-2">
             <DarkModeButton />
             {navigation.social.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className="text-gray-500 hover:text-gray-700 dark:text-dark-txt-secondary dark:hover:text-dark-txt"
+                className="dark:text-dark-txt-secondary dark:hover:text-dark-txt text-gray-500 hover:text-gray-700"
               >
                 <span className="sr-only">{item.name}</span>
                 <item.icon aria-hidden="true" className="size-5" />

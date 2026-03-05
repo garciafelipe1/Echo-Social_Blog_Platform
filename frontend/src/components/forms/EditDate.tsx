@@ -27,7 +27,7 @@ export default function EditDate({
   const formattedDate = moment(data).format(useTime ? 'YYYY-MM-DDTHH:mm' : 'YYYY-MM-DD');
 
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <span className="dark:text-dark-txt block text-sm font-bold text-gray-900">{title}</span>
       <div className={`${inputFormClassName}`}>
         <input

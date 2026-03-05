@@ -1,6 +1,6 @@
 import Button from '@/components/Button';
 import Layout from '@/hocs/Layout';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { UnknownAction } from 'redux';
 import { useDispatch } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -28,20 +28,23 @@ export default function Page() {
     setParams(getParamsFromUrl());
   }, []);
 
-  const doActivate = async (uid: string, token: string) => {
-    if (!token?.trim() || !uid?.trim()) {
-      ToastError('Token and UID must be provided');
-      return;
-    }
-    try {
-      setLoading(true);
-      await dispatch(activate({ uid: uid.trim(), token: token.trim() }));
-    } catch (err) {
-      ToastError(`${err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const doActivate = useCallback(
+    async (uid: string, token: string) => {
+      if (!token?.trim() || !uid?.trim()) {
+        ToastError('Token and UID must be provided');
+        return;
+      }
+      try {
+        setLoading(true);
+        await dispatch(activate({ uid: uid.trim(), token: token.trim() }));
+      } catch (err) {
+        ToastError(`${err}`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [dispatch],
+  );
 
   // Auto-activar al cargar cuando la URL ya tiene uid y token (enlace del correo)
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function Page() {
     if (!uid || !token || autoTriggered.current) return;
     autoTriggered.current = true;
     doActivate(uid, token);
-  }, [params.uid, params.token]);
+  }, [params, doActivate]);
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

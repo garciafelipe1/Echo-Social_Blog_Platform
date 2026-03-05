@@ -3,7 +3,6 @@ import EditEmail from '@/components/forms/EditEmail';
 import EditPassword from '@/components/forms/EditPassword';
 
 import Layout from '@/hocs/Layout';
-;
 import { useState } from 'react';
 
 import { UnknownAction } from 'redux';
@@ -78,14 +77,13 @@ export default function Page() {
       setLoading(true);
       const res = await verifyOTPLogin(sendVerifyOTPLoginData);
       if (res.status === 200) {
-        await dispatch(loadUser()); 
+        await dispatch(loadUser());
         await dispatch(loadProfile());
         await dispatch(setLoginSuccess());
-        
+
         ToastSuccess('Login successfull.');
 
         router.push('/');
-        
       } else {
         setEmail('');
         setOTP('');
@@ -100,7 +98,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 pt-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-dark-txt">
+        <h2 className="dark:text-dark-txt mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           Accede a tu cuenta
         </h2>
       </div>

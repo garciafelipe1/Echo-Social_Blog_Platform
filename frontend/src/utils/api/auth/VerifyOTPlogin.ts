@@ -1,5 +1,4 @@
-import { ToastError } from "@/components/toast/toast";
-
+import { ToastError } from '@/components/toast/toast';
 
 export interface SendVerifyOTPLoginProps {
   email: string;

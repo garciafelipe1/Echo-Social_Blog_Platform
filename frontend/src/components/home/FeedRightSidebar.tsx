@@ -23,9 +23,13 @@ export default function FeedRightSidebar({
       <SidebarAuthors posts={latestPosts} />
 
       {/* Mini footer */}
-      <nav className="flex flex-wrap gap-x-3 gap-y-1 px-4 text-xs text-gray-400 dark:text-dark-txt-secondary">
-        <Link href="/contact" className="hover:text-gray-600 dark:hover:text-dark-txt">Contacto</Link>
-        <Link href="/blog" className="hover:text-gray-600 dark:hover:text-dark-txt">Blog</Link>
+      <nav className="dark:text-dark-txt-secondary flex flex-wrap gap-x-3 gap-y-1 px-4 text-xs text-gray-400">
+        <Link href="/contact" className="dark:hover:text-dark-txt hover:text-gray-600">
+          Contacto
+        </Link>
+        <Link href="/blog" className="dark:hover:text-dark-txt hover:text-gray-600">
+          Blog
+        </Link>
         <span>&copy; {new Date().getFullYear()} Echo</span>
       </nav>
     </div>

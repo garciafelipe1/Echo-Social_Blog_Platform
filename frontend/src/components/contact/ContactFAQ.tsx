@@ -33,20 +33,22 @@ function FAQAccordionItem({ item }: { item: FAQItem }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-200 dark:border-dark-third">
+    <div className="dark:border-dark-third border-b border-gray-200">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between py-4 text-left text-[15px] font-medium text-gray-900 hover:text-violet-600 dark:text-dark-txt dark:hover:text-violet-400"
+        className="dark:text-dark-txt flex w-full items-center justify-between py-4 text-left text-[15px] font-medium text-gray-900 hover:text-violet-600 dark:hover:text-violet-400"
         aria-expanded={open}
       >
         {item.question}
         <ChevronDownIcon
-          className={`h-5 w-5 shrink-0 text-gray-400 transition-transform dark:text-dark-txt-secondary ${open ? 'rotate-180' : ''}`}
+          className={`dark:text-dark-txt-secondary h-5 w-5 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
-        <p className="pb-4 text-sm leading-relaxed text-gray-600 dark:text-dark-txt-secondary">{item.answer}</p>
+        <p className="dark:text-dark-txt-secondary pb-4 text-sm leading-relaxed text-gray-600">
+          {item.answer}
+        </p>
       )}
     </div>
   );
@@ -55,8 +57,10 @@ function FAQAccordionItem({ item }: { item: FAQItem }) {
 export default function ContactFAQ() {
   return (
     <section id="faq" className="mx-auto max-w-3xl">
-      <h2 className="text-center text-xl font-bold text-gray-900 dark:text-dark-txt">Preguntas frecuentes</h2>
-      <p className="mt-2 text-center text-sm text-gray-600 dark:text-dark-txt-secondary">
+      <h2 className="dark:text-dark-txt text-center text-xl font-bold text-gray-900">
+        Preguntas frecuentes
+      </h2>
+      <p className="dark:text-dark-txt-secondary mt-2 text-center text-sm text-gray-600">
         ¿No encuentras lo que buscas? Escríbenos con el formulario de arriba.
       </p>
       <div className="mt-8">

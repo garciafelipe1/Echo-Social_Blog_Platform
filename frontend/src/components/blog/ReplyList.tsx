@@ -55,10 +55,12 @@ export default function ReplyList({
         onClick={() => setOpen(!open)}
         className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
       >
-        {open ? 'Ocultar respuestas' : `Ver ${repliesCount} respuesta${repliesCount !== 1 ? 's' : ''}`}
+        {open
+          ? 'Ocultar respuestas'
+          : `Ver ${repliesCount} respuesta${repliesCount !== 1 ? 's' : ''}`}
       </button>
       {open && (
-        <div className="mt-2 space-y-2 border-l-2 border-gray-100 pl-3 dark:border-dark-third">
+        <div className="dark:border-dark-third mt-2 space-y-2 border-l-2 border-gray-100 pl-3">
           {loading ? (
             <p className="text-xs text-gray-400">Cargando...</p>
           ) : (

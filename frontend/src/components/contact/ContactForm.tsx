@@ -14,7 +14,13 @@ const INITIAL_FORM: FormData = { name: '', email: '', subject: '', message: '' }
 
 const FIELDS = [
   { id: 'name', label: 'Nombre', type: 'text', placeholder: 'Tu nombre', autoComplete: 'name' },
-  { id: 'email', label: 'Email', type: 'email', placeholder: 'tu@email.com', autoComplete: 'email' },
+  {
+    id: 'email',
+    label: 'Email',
+    type: 'email',
+    placeholder: 'tu@email.com',
+    autoComplete: 'email',
+  },
   { id: 'subject', label: 'Asunto', type: 'text', placeholder: '¿En qué podemos ayudarte?' },
 ] as const;
 
@@ -52,8 +58,8 @@ export default function ContactForm() {
     return (
       <div className="flex flex-col items-center rounded-2xl border border-emerald-200 bg-emerald-50 p-10 text-center dark:border-emerald-800 dark:bg-emerald-900/20">
         <EnvelopeIcon className="mb-4 h-12 w-12 text-emerald-500" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-txt">Mensaje enviado</h3>
-        <p className="mt-2 text-sm text-gray-600 dark:text-dark-txt-secondary">
+        <h3 className="dark:text-dark-txt text-lg font-semibold text-gray-900">Mensaje enviado</h3>
+        <p className="dark:text-dark-txt-secondary mt-2 text-sm text-gray-600">
           Gracias por contactarnos. Te responderemos lo antes posible.
         </p>
         <button
@@ -71,7 +77,10 @@ export default function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       {FIELDS.map((field) => (
         <div key={field.id}>
-          <label htmlFor={field.id} className="block text-sm font-medium text-gray-700 dark:text-dark-txt">
+          <label
+            htmlFor={field.id}
+            className="dark:text-dark-txt block text-sm font-medium text-gray-700"
+          >
             {field.label}
           </label>
           <input
@@ -82,13 +91,16 @@ export default function ContactForm() {
             value={form[field.id as keyof FormData]}
             onChange={handleChange}
             required
-            className="mt-1.5 block w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder:text-dark-txt-secondary"
+            className="dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder:text-dark-txt-secondary mt-1.5 block w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
           />
         </div>
       ))}
 
       <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-dark-txt">
+        <label
+          htmlFor="message"
+          className="dark:text-dark-txt block text-sm font-medium text-gray-700"
+        >
           Mensaje
         </label>
         <textarea
@@ -98,7 +110,7 @@ export default function ContactForm() {
           value={form.message}
           onChange={handleChange}
           required
-          className="mt-1.5 block w-full resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder:text-dark-txt-secondary"
+          className="dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder:text-dark-txt-secondary mt-1.5 block w-full resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
         />
       </div>
 

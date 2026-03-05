@@ -51,7 +51,7 @@ export default function CommentComposer({
           placeholder={placeholder}
           autoFocus={autoFocus}
           rows={2}
-          className="w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none transition focus:border-violet-400 focus:bg-white dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder-dark-txt-secondary dark:focus:border-violet-500 dark:focus:bg-dark-main"
+          className="dark:border-dark-third dark:bg-dark-second dark:text-dark-txt dark:placeholder-dark-txt-secondary dark:focus:bg-dark-main w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none transition focus:border-violet-400 focus:bg-white dark:focus:border-violet-500"
         />
         <div className="mt-1.5 flex justify-end">
           <button

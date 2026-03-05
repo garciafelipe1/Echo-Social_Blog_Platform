@@ -1,4 +1,3 @@
-
 import { Dispatch, UnknownAction } from 'redux';
 import { ToastSuccess, ToastError } from '@/components/toast/toast';
 import {
@@ -253,7 +252,6 @@ export const login =
         });
         await dispatch(loadUser());
         await dispatch(loadProfile());
-
       } else {
         dispatch({
           type: LOGIN_FAIL,
@@ -303,27 +301,22 @@ export const setLoginSuccess = () => async (dispatch: Dispatch) => {
     dispatch({
       type: LOGIN_SUCCESS,
     });
-    
   } catch (err) {
     dispatch({
       type: LOGIN_FAIL,
     });
-    
   }
 };
 
-
-export const logout= () => async (dispatch: Dispatch) => {
+export const logout = () => async (dispatch: Dispatch) => {
   try {
-    const res=await fetch('/api/auth/logout');
-    if(res.status===200){
+    const res = await fetch('/api/auth/logout');
+    if (res.status === 200) {
       dispatch({
         type: LOGOUT,
       });
-      
     }
   } catch (err) {
     ToastError('Unexpected error');
-    };
-  
-}
+  }
+};

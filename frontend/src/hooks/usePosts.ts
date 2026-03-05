@@ -1,9 +1,8 @@
-import { ToastError, ToastSuccess } from "@/components/toast/toast";
-import { IPostsList } from "@/interfaces/blog/IPost";
-import deletePost from "@/utils/api/blog/post/author/delete";
-import { listPostsUseCase } from "@/application/container";
-import { useCallback, useEffect, useState } from "react";
-
+import { ToastError, ToastSuccess } from '@/components/toast/toast';
+import { IPostsList } from '@/interfaces/blog/IPost';
+import deletePost from '@/utils/api/blog/post/author/delete';
+import { listPostsUseCase } from '@/application/container';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ComponentProps {
   username?: string;
@@ -43,20 +42,20 @@ export default function usePosts({ username, showFeatured, feed, category }: Com
         if (res) {
           setPosts((res.results as IPostsList[]) || []);
           setCount(res.count ?? 0);
-          setNextUrl(res.next ?? "");
+          setNextUrl(res.next ?? '');
         }
       } catch (err) {
-        ToastError("error fetching posts");
+        ToastError('error fetching posts');
       } finally {
         setLoading(false);
       }
     },
-    [pageSize, ordering, sorting, author, showFeatured, feed, category]
+    [pageSize, ordering, sorting, author, showFeatured, feed, category],
   );
 
   useEffect(() => {
     listPosts(currentPage, searchBy);
-  }, [listPosts, currentPage]);
+  }, [listPosts, currentPage, searchBy]);
   const onSubmitSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     listPosts(1, searchBy);
@@ -81,10 +80,10 @@ export default function usePosts({ username, showFeatured, feed, category }: Com
       if (res) {
         setPosts((prev) => [...prev, ...((res.results as IPostsList[]) || [])]);
         setCount(res.count ?? 0);
-        setNextUrl(res.next ?? "");
+        setNextUrl(res.next ?? '');
       }
     } catch (err) {
-      ToastError("Error fetching posts");
+      ToastError('Error fetching posts');
     } finally {
       setLoadingMore(false);
     }

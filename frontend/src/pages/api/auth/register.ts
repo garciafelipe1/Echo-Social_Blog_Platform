@@ -1,5 +1,3 @@
-
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 type Data = {
   name?: string;
@@ -13,7 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
   }
 
- 
   try {
     const apiRes = await fetch(`${process.env.API_URL}/auth/users/`, {
       method: 'POST',
@@ -32,4 +29,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
   }
 }
-

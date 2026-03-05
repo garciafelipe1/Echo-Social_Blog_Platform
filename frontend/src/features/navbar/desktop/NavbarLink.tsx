@@ -1,4 +1,4 @@
-import HoverClass from "@/utils/api/HoverClass";
+import HoverClass from '@/utils/api/HoverClass';
 import Link from 'next/link';
 
 interface ComponentProps {
@@ -19,4 +19,3 @@ NavbarLink.defaultProps = {
   href: '/',
   useHover: true,
 };
-

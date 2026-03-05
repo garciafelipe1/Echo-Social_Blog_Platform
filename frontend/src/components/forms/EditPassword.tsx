@@ -32,7 +32,7 @@ export default function EditPassword({
 
     setData(inputValue);
   };
-  
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   return (

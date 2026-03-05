@@ -1,6 +1,6 @@
-import { IUser } from "../auth/IUser";
+import { IUser } from '../auth/IUser';
 import { ICategory, ICategoryList } from './ICategory';
-import { IHeading } from "./IHeading";
+import { IHeading } from './IHeading';
 
 export interface IPostUser {
   username: string;
@@ -8,10 +8,6 @@ export interface IPostUser {
   last_name: string;
   profile_picture: string | null;
 }
-
-
-
-
 
 export interface IPost {
   id: string;
@@ -61,4 +57,3 @@ export interface IPostsList {
   user: IUser;
   status: string;
 }
-

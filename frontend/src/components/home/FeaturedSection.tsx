@@ -13,9 +13,12 @@ interface FeaturedSectionProps {
 export default function FeaturedSection({ posts, loading }: FeaturedSectionProps) {
   if (loading) {
     return (
-      <section aria-labelledby="featured-heading" className="bg-white py-12 sm:py-16 dark:bg-dark-main">
+      <section
+        aria-labelledby="featured-heading"
+        className="dark:bg-dark-main bg-white py-12 sm:py-16"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 h-5 w-28 animate-pulse rounded bg-gray-200 dark:bg-dark-third" />
+          <div className="dark:bg-dark-third mb-8 h-5 w-28 animate-pulse rounded bg-gray-200" />
           <BlogHeroSkeleton />
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -32,18 +35,21 @@ export default function FeaturedSection({ posts, loading }: FeaturedSectionProps
   const [heroPost, ...restPosts] = posts;
 
   return (
-    <section aria-labelledby="featured-heading" className="bg-white py-12 sm:py-16 dark:bg-dark-main">
+    <section
+      aria-labelledby="featured-heading"
+      className="dark:bg-dark-main bg-white py-12 sm:py-16"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <h2
             id="featured-heading"
-            className="text-lg font-bold tracking-tight text-gray-900 dark:text-dark-txt"
+            className="dark:text-dark-txt text-lg font-bold tracking-tight text-gray-900"
           >
             Destacados
           </h2>
           <Link
             href="/blog"
-            className="text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-dark-txt-secondary dark:hover:text-dark-txt"
+            className="dark:text-dark-txt-secondary dark:hover:text-dark-txt text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
           >
             Ver todo →
           </Link>

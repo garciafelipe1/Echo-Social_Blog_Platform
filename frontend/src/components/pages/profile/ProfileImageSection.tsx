@@ -12,8 +12,14 @@ interface Props {
 }
 
 export default function ProfileImageSection({
-  profilePicture, onLoadProfilePicture, setProfilePicture, profilePicturePercentage,
-  bannerPicture, onLoadBannerPicture, setBannerPicture, bannerPicturePercentage,
+  profilePicture,
+  onLoadProfilePicture,
+  setProfilePicture,
+  profilePicturePercentage,
+  bannerPicture,
+  onLoadBannerPicture,
+  setBannerPicture,
+  bannerPicturePercentage,
 }: Props) {
   return (
     <>

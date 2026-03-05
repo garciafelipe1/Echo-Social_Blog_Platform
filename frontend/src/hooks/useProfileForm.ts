@@ -98,28 +98,39 @@ export default function useProfileForm() {
 
   useEffect(() => {
     setHasChanges(
-      username !== user?.username ||
-      firstName !== user?.first_name ||
-      lastName !== user?.last_name,
+      username !== user?.username || firstName !== user?.first_name || lastName !== user?.last_name,
     );
 
     setHasChangesProfile(
       (biography !== profile?.biography && !isRichTextEmpty(biography)) ||
-      (birthday !== profile?.birthday && isValidDate(birthday)) ||
-      (website !== profile?.website && isValidUrl(website)) ||
-      (twitter !== profile?.twitter && isValidUrl(twitter)) ||
-      (instagram !== profile?.instagram && isValidUrl(instagram)) ||
-      (github !== profile?.github && isValidUrl(github)) ||
-      (linkedin !== profile?.linkedin && isValidUrl(linkedin)) ||
-      (youtube !== profile?.youtube && isValidUrl(youtube)) ||
-      (tiktok !== profile?.tiktok && isValidUrl(tiktok)) ||
-      (facebook !== profile?.facebook && isValidUrl(facebook)) ||
-      (snapchat !== profile?.snapchat && isValidUrl(snapchat)),
+        (birthday !== profile?.birthday && isValidDate(birthday)) ||
+        (website !== profile?.website && isValidUrl(website)) ||
+        (twitter !== profile?.twitter && isValidUrl(twitter)) ||
+        (instagram !== profile?.instagram && isValidUrl(instagram)) ||
+        (github !== profile?.github && isValidUrl(github)) ||
+        (linkedin !== profile?.linkedin && isValidUrl(linkedin)) ||
+        (youtube !== profile?.youtube && isValidUrl(youtube)) ||
+        (tiktok !== profile?.tiktok && isValidUrl(tiktok)) ||
+        (facebook !== profile?.facebook && isValidUrl(facebook)) ||
+        (snapchat !== profile?.snapchat && isValidUrl(snapchat)),
     );
   }, [
-    user, username, biography, firstName, lastName,
-    birthday, website, twitter, instagram, github,
-    linkedin, youtube, tiktok, snapchat, facebook, profile,
+    user,
+    username,
+    biography,
+    firstName,
+    lastName,
+    birthday,
+    website,
+    twitter,
+    instagram,
+    github,
+    linkedin,
+    youtube,
+    tiktok,
+    snapchat,
+    facebook,
+    profile,
   ]);
 
   const handleSaveUserData = async () => {
@@ -209,7 +220,10 @@ export default function useProfileForm() {
     setUploadingProfilePicture(true);
     setProfilePicturePercentage(30);
     try {
-      const ok = await uploadImage(profilePicture.file as File, '/api/profile/upload_profile_picture/');
+      const ok = await uploadImage(
+        profilePicture.file as File,
+        '/api/profile/upload_profile_picture/',
+      );
       if (ok) {
         ToastSuccess('Profile picture updated successfully!');
         setHasChangesProfilePicture(false);
@@ -230,7 +244,10 @@ export default function useProfileForm() {
     setUploadingBannerPicture(true);
     setBannerPicturePercentage(30);
     try {
-      const ok = await uploadImage(bannerPicture.file as File, '/api/profile/upload_banner_picture/');
+      const ok = await uploadImage(
+        bannerPicture.file as File,
+        '/api/profile/upload_banner_picture/',
+      );
       if (ok) {
         ToastSuccess('Banner updated successfully!');
         setHasChangesBannerPicture(false);
@@ -244,7 +261,12 @@ export default function useProfileForm() {
   };
 
   const handleSaveAll = async () => {
-    if (!hasChanges && !hasChangesProfile && !hasChangesProfilePicture && !hasChangesBannerPicture) {
+    if (
+      !hasChanges &&
+      !hasChangesProfile &&
+      !hasChangesProfilePicture &&
+      !hasChangesBannerPicture
+    ) {
       ToastWarning('No changes made.');
       return;
     }
@@ -262,28 +284,46 @@ export default function useProfileForm() {
     }
   };
 
-  const hasAnyChanges = hasChanges || hasChangesProfile || hasChangesProfilePicture || hasChangesBannerPicture;
+  const hasAnyChanges =
+    hasChanges || hasChangesProfile || hasChangesProfilePicture || hasChangesBannerPicture;
 
   return {
     loading,
     hasAnyChanges,
     user: { username, setUsername, firstName, setFirstName, lastName, setLastName },
     profileFields: {
-      biography, setBiography,
-      birthday, setBirthday,
-      website, setWebsite,
-      twitter, setTwitter,
-      instagram, setInstagram,
-      github, setGithub,
-      linkedin, setLinkedin,
-      youtube, setYoutube,
-      tiktok, setTiktok,
-      snapchat, setSnapchat,
-      facebook, setFacebook,
+      biography,
+      setBiography,
+      birthday,
+      setBirthday,
+      website,
+      setWebsite,
+      twitter,
+      setTwitter,
+      instagram,
+      setInstagram,
+      github,
+      setGithub,
+      linkedin,
+      setLinkedin,
+      youtube,
+      setYoutube,
+      tiktok,
+      setTiktok,
+      snapchat,
+      setSnapchat,
+      facebook,
+      setFacebook,
     },
     images: {
-      profilePicture, onLoadProfilePicture, setProfilePicture, profilePicturePercentage,
-      bannerPicture, onLoadBannerPicture, setBannerPicture, bannerPicturePercentage,
+      profilePicture,
+      onLoadProfilePicture,
+      setProfilePicture,
+      profilePicturePercentage,
+      bannerPicture,
+      onLoadBannerPicture,
+      setBannerPicture,
+      bannerPicturePercentage,
     },
     handleSaveAll,
   };

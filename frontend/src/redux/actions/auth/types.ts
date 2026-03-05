@@ -19,4 +19,4 @@ export const VERIFY_TOKEN_FAIL = 'VERIFY_TOKEN_FAIL';
 export const LOAD_PROFILE_SUCCESS = 'LOAD_PROFILE_SUCCESS';
 export const LOAD_PROFILE_FAIL = 'LOAD_PROFILE_FAIL';
 
-export const LOGOUT= 'LOGOUT';
+export const LOGOUT = 'LOGOUT';

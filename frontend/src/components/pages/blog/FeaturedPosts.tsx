@@ -13,16 +13,22 @@ const SECTION_TITLE = 'Destacados';
 export default function FeaturedPosts({ posts, loading }: ComponentProps) {
   if (loading) {
     return (
-      <section aria-labelledby="featured-heading" className="border-b border-gray-200 bg-white py-8 sm:py-12 dark:border-dark-third dark:bg-dark-bg">
+      <section
+        aria-labelledby="featured-heading"
+        className="dark:border-dark-third dark:bg-dark-bg border-b border-gray-200 bg-white py-8 sm:py-12"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 id="featured-heading" className="text-xl font-semibold text-gray-900 dark:text-dark-txt">
+          <h2
+            id="featured-heading"
+            className="dark:text-dark-txt text-xl font-semibold text-gray-900"
+          >
             {SECTION_TITLE}
           </h2>
           <div className="mt-6 grid grid-cols-1 gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-2">
             <LoadingPostCard />
             <div className="space-y-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 rounded-lg bg-gray-100 dark:bg-dark-second" />
+                <div key={i} className="dark:bg-dark-second h-24 rounded-lg bg-gray-100" />
               ))}
             </div>
           </div>
@@ -38,9 +44,15 @@ export default function FeaturedPosts({ posts, loading }: ComponentProps) {
   const [featuredPost, ...restPosts] = posts;
 
   return (
-    <section aria-labelledby="featured-heading" className="border-b border-gray-200 bg-white py-8 sm:py-12 dark:border-dark-third dark:bg-dark-bg">
+    <section
+      aria-labelledby="featured-heading"
+      className="dark:border-dark-third dark:bg-dark-bg border-b border-gray-200 bg-white py-8 sm:py-12"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 id="featured-heading" className="text-xl font-semibold text-gray-900 dark:text-dark-txt">
+        <h2
+          id="featured-heading"
+          className="dark:text-dark-txt text-xl font-semibold text-gray-900"
+        >
           {SECTION_TITLE}
         </h2>
         <div className="mx-auto mt-6 grid max-w-7xl grid-cols-1 gap-x-8 gap-y-8 sm:mt-8 sm:gap-y-12 lg:grid-cols-2 lg:gap-y-16">

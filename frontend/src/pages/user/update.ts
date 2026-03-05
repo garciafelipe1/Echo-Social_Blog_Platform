@@ -29,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: `JWT ${accessToken}`,
-        
       },
       body: JSON.stringify(req.body),
     });

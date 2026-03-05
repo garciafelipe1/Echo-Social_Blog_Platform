@@ -42,11 +42,11 @@ function TiptapEditor({ data, setData, maxTextLength }: TipTapEditorProps) {
     }
   }, [data, editor]);
 
-   useEffect(() => {
-     if (editor && data === '') {
-       editor.commands.clearContent();
-     }
-   }, [data, editor]);
+  useEffect(() => {
+    if (editor && data === '') {
+      editor.commands.clearContent();
+    }
+  }, [data, editor]);
   return (
     <div className="w-full">
       <Toolbar editor={editor} maxTextLength={maxTextLength} />

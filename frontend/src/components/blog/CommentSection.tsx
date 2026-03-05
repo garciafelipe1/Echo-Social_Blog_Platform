@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import Link from 'next/link';
 import { RootState } from '@/redux/reducers';
 import useComments from '@/hooks/useComments';
 import CommentComposer from './CommentComposer';
@@ -23,20 +24,18 @@ export default function CommentSection({ slug }: Props) {
   } = useComments({ slug });
 
   return (
-    <section id="comments" className="mt-8 border-t border-gray-100 pt-6 dark:border-dark-third">
-      <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-dark-txt">
-        Comentarios
-      </h2>
+    <section id="comments" className="dark:border-dark-third mt-8 border-t border-gray-100 pt-6">
+      <h2 className="dark:text-dark-txt mb-4 text-lg font-bold text-gray-900">Comentarios</h2>
 
       {isAuthenticated ? (
         <div className="mb-6">
           <CommentComposer onSubmit={postComment} submitting={submitting} />
         </div>
       ) : (
-        <p className="mb-6 text-sm text-gray-400 dark:text-dark-txt-secondary">
-          <a href="/login" className="text-violet-600 hover:underline dark:text-violet-400">
+        <p className="dark:text-dark-txt-secondary mb-6 text-sm text-gray-400">
+          <Link href="/login" className="text-violet-600 hover:underline dark:text-violet-400">
             Inicia sesion
-          </a>{' '}
+          </Link>{' '}
           para dejar un comentario.
         </p>
       )}
@@ -45,16 +44,16 @@ export default function CommentSection({ slug }: Props) {
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex animate-pulse gap-3">
-              <div className="h-7 w-7 rounded-full bg-gray-200 dark:bg-dark-third" />
+              <div className="dark:bg-dark-third h-7 w-7 rounded-full bg-gray-200" />
               <div className="flex-1 space-y-2">
-                <div className="h-3 w-24 rounded bg-gray-200 dark:bg-dark-third" />
-                <div className="h-10 rounded-lg bg-gray-100 dark:bg-dark-second" />
+                <div className="dark:bg-dark-third h-3 w-24 rounded bg-gray-200" />
+                <div className="dark:bg-dark-second h-10 rounded-lg bg-gray-100" />
               </div>
             </div>
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-gray-400 dark:text-dark-txt-secondary">
+        <p className="dark:text-dark-txt-secondary text-sm text-gray-400">
           Aun no hay comentarios. Se el primero.
         </p>
       ) : (

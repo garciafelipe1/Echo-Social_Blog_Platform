@@ -30,10 +30,10 @@ export default function ContactInfo() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-dark-txt">
+        <h2 className="dark:text-dark-txt text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
           Ponte en contacto
         </h2>
-        <p className="mt-3 text-gray-600 dark:text-dark-txt-secondary">
+        <p className="dark:text-dark-txt-secondary mt-3 text-gray-600">
           ¿Tienes una pregunta, sugerencia o quieres colaborar? Nos encantaría saber de ti.
         </p>
       </div>
@@ -45,8 +45,12 @@ export default function ContactInfo() {
               <item.icon className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-dark-txt">{item.title}</h3>
-              <p className="mt-0.5 text-sm text-gray-600 dark:text-dark-txt-secondary">{item.description}</p>
+              <h3 className="dark:text-dark-txt text-sm font-semibold text-gray-900">
+                {item.title}
+              </h3>
+              <p className="dark:text-dark-txt-secondary mt-0.5 text-sm text-gray-600">
+                {item.description}
+              </p>
               <Link
                 href={item.action.href}
                 className="mt-1 inline-block text-sm font-medium text-violet-600 hover:text-violet-700"

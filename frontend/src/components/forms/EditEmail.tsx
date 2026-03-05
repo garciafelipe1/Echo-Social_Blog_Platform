@@ -24,19 +24,16 @@ export default function EditEmail({
   title = '', // Posible error tipográfico, podría ser "title"
   description = '',
 }: ComponentsProps) {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let inputValue = e.target.value;
 
-    const handleInputChange=(e:ChangeEvent<HTMLInputElement>)=>{
-        let inputValue= e.target.value
+    inputValue = inputValue
+      .replace(/<script.*?>.*?<\/script>/gi, '')
+      .replace(/<\/?[^>]+(>|$)/g, '')
+      .replace(/[;:"!]/g, '');
 
-        inputValue=inputValue
-            .replace(/<script.*?>.*?<\/script>/gi,'')
-            .replace(/<\/?[^>]+(>|$)/g,'')
-            .replace(/[;:"!]/g,'')
-
-        setData(inputValue)
-    }
-
-
+    setData(inputValue);
+  };
 
   return (
     <div>

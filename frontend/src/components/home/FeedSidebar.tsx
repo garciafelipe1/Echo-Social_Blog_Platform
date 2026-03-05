@@ -14,15 +14,17 @@ export default function FeedSidebar({ posts }: FeedSidebarProps) {
   if (list.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 dark:border-dark-third dark:bg-dark-bg">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-dark-txt">Destacados</h3>
-      <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-txt-secondary">Publicaciones seleccionadas</p>
+    <div className="dark:border-dark-third dark:bg-dark-bg rounded-2xl border border-gray-200 bg-gray-50/50 p-4">
+      <h3 className="dark:text-dark-txt text-lg font-bold text-gray-900">Destacados</h3>
+      <p className="dark:text-dark-txt-secondary mt-0.5 text-sm text-gray-500">
+        Publicaciones seleccionadas
+      </p>
       <ul className="mt-4 space-y-3">
         {list.map((post) => (
           <li key={post.id}>
             <Link
               href={`/blog/post/${post.slug}`}
-              className="block rounded-xl p-2 transition-colors hover:bg-white dark:hover:bg-dark-second"
+              className="dark:hover:bg-dark-second block rounded-xl p-2 transition-colors hover:bg-white"
             >
               <div className="flex gap-3">
                 {post.thumbnail ? (
@@ -36,13 +38,17 @@ export default function FeedSidebar({ posts }: FeedSidebarProps) {
                     />
                   </div>
                 ) : (
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-200 text-lg font-semibold text-gray-500 dark:bg-dark-third dark:text-dark-txt-secondary">
+                  <div className="dark:bg-dark-third dark:text-dark-txt-secondary flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gray-200 text-lg font-semibold text-gray-500">
                     {post.title?.charAt(0) || '?'}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-txt">{post.title}</p>
-                  <p className="truncate text-xs text-gray-500 dark:text-dark-txt-secondary">@{post?.user?.username}</p>
+                  <p className="dark:text-dark-txt truncate text-sm font-medium text-gray-900">
+                    {post.title}
+                  </p>
+                  <p className="dark:text-dark-txt-secondary truncate text-xs text-gray-500">
+                    @{post?.user?.username}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -51,7 +57,7 @@ export default function FeedSidebar({ posts }: FeedSidebarProps) {
       </ul>
       <Link
         href="/blog"
-        className="mt-3 block rounded-xl py-2 text-center text-sm font-medium text-violet-600 hover:bg-white hover:text-violet-700 dark:text-dark-accent dark:hover:bg-dark-second"
+        className="dark:text-dark-accent dark:hover:bg-dark-second mt-3 block rounded-xl py-2 text-center text-sm font-medium text-violet-600 hover:bg-white hover:text-violet-700"
       >
         Ver todo
       </Link>

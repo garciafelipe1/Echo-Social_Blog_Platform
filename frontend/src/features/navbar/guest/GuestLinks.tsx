@@ -1,4 +1,4 @@
-import NavbarLink from "../desktop/NavbarLink";
+import NavbarLink from '../desktop/NavbarLink';
 
 export default function GuestLinks() {
   return (

@@ -32,17 +32,20 @@ export default function BookmarksPage() {
     <div className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-8">
       <div className="mb-6 flex items-center gap-2">
         <BookmarkIcon className="h-6 w-6 text-violet-600" />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-dark-txt">Guardados</h1>
+        <h1 className="dark:text-dark-txt text-xl font-bold text-gray-900">Guardados</h1>
       </div>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-100 dark:bg-dark-second" />
+            <div
+              key={i}
+              className="dark:bg-dark-second h-20 animate-pulse rounded-lg bg-gray-100"
+            />
           ))}
         </div>
       ) : posts.length === 0 ? (
-        <p className="py-12 text-center text-sm text-gray-400 dark:text-dark-txt-secondary">
+        <p className="dark:text-dark-txt-secondary py-12 text-center text-sm text-gray-400">
           No tienes publicaciones guardadas.
         </p>
       ) : (

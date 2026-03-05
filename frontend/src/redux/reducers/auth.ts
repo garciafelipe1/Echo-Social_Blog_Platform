@@ -1,5 +1,4 @@
-
-import { IUser } from "@/interfaces/auth/IUser";
+import { IUser } from '@/interfaces/auth/IUser';
 import {
   SIGNUP_SUCCESS,
   SIGNUP_FAIL,
@@ -17,27 +16,24 @@ import {
   LOAD_PROFILE_FAIL,
   LOGOUT,
 } from '../actions/auth/types';
-import { IProfile } from "@/interfaces/auth/IProfile";
+import { IProfile } from '@/interfaces/auth/IProfile';
 
+type Action = {
+  type: string;
+  payload?: any;
+};
 
-type Action={
-    type:string,
-    payload?:any
+type State = {
+  user: IUser | null;
+  profile: IProfile | null;
+  isAuthenticated: boolean;
+};
 
-}
-
-type State={
-    user: IUser| null;
-    profile: IProfile| null;
-    isAuthenticated:boolean;
-}
-
-const initialState={
+const initialState = {
   user: null,
-  profile : null,
+  profile: null,
   isAuthenticated: false,
-
-}
+};
 
 export default function authReducer(state: State = initialState, action: Action = { type: '' }) {
   const { type, payload } = action;

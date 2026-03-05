@@ -22,11 +22,7 @@ export default function AuthLinks() {
     dispatch(logout());
     router.push('/');
   };
-   const profilePictureUrl = profile?.profile_picture
-     ? mediaUrl(profile.profile_picture)
-     : userin;
-
-
+  const profilePictureUrl = profile?.profile_picture ? mediaUrl(profile.profile_picture) : userin;
 
   return (
     <div className="flex items-center gap-2">
@@ -66,7 +62,7 @@ export default function AuthLinks() {
               Account settings
             </Link>
           </MenuItem>
-          
+
           <MenuItem>
             <button
               onClick={handleLogout}

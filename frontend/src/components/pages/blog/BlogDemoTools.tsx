@@ -22,11 +22,7 @@ export default function BlogDemoTools({ onRefetchAfterGenerate }: Props) {
           <WrenchScrewdriverIcon className="h-5 w-5" />
           Herramientas de desarrollo
         </span>
-        {open ? (
-          <ChevronUpIcon className="h-5 w-5" />
-        ) : (
-          <ChevronDownIcon className="h-5 w-5" />
-        )}
+        {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
       </button>
       {open && (
         <div className="flex flex-wrap items-center gap-3 border-t border-amber-200/80 px-4 py-3">

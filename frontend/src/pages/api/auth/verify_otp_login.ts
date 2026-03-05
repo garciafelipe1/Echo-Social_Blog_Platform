@@ -18,7 +18,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        
       },
       body: JSON.stringify(req.body),
     });

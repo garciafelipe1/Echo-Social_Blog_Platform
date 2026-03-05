@@ -26,8 +26,8 @@ export default function EditURL({
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    setInputValue(data || '');
-  }, [data]); // Update inputValue when 'data' changes
+    queueMicrotask(() => setInputValue(data || ''));
+  }, [data]);
 
   const validate = (value: string) => {
     if (validator.isURL(value)) {

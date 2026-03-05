@@ -10,8 +10,6 @@ export interface UpdatePostProps {
 }
 
 export default async function updatePost(props: UpdatePostProps) {
-  
-
   try {
     const res = await fetch(`/api/blog/post/update/`, {
       // Incluimos el slug en la URL

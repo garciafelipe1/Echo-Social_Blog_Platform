@@ -110,21 +110,18 @@ export default function useComments({ slug }: UseCommentsOptions) {
     [fetchComments],
   );
 
-  const deleteComment = useCallback(
-    async (commentId: string) => {
-      try {
-        const res = await fetch(`/api/blog/post/comment?comment_id=${commentId}`, {
-          method: 'DELETE',
-        });
-        if (res.ok) {
-          setComments((prev) => prev.filter((c) => c.id !== commentId));
-        }
-      } catch {
-        // silent
+  const deleteComment = useCallback(async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/blog/post/comment?comment_id=${commentId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
       }
-    },
-    [],
-  );
+    } catch {
+      // silent
+    }
+  }, []);
 
   const refetch = useCallback(() => {
     setPage(1);

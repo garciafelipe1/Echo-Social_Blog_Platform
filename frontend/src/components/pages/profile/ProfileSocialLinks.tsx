@@ -15,7 +15,7 @@ export default function ProfileSocialLinks({ fields }: Props) {
     <>
       {fields.map(({ label, value, setter }) => (
         <li key={label} className="py-6 sm:flex">
-          <h4 className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+          <h4 className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
             {label}
           </h4>
           <div className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">

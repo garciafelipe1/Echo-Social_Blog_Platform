@@ -12,7 +12,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative rounded-full p-2 text-gray-600 transition hover:bg-gray-100 dark:text-dark-txt dark:hover:bg-dark-third"
+        className="dark:text-dark-txt dark:hover:bg-dark-third relative rounded-full p-2 text-gray-600 transition hover:bg-gray-100"
         aria-label="Notificaciones"
       >
         <BellIcon className="h-5 w-5" />

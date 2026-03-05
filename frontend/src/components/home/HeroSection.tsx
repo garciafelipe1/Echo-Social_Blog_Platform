@@ -14,9 +14,7 @@ export default function HeroSection() {
         <h1 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
           {HERO.title}
         </h1>
-        <p className="mt-4 text-lg text-gray-600 sm:text-xl">
-          {HERO.tagline}
-        </p>
+        <p className="mt-4 text-lg text-gray-600 sm:text-xl">{HERO.tagline}</p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/blog"

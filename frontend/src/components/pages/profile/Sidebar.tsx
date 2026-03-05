@@ -8,8 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 
-
-function classNames(...classes:any) {
+function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ');
 }
 
@@ -33,7 +32,7 @@ export default function Sidebar() {
     // { name: 'Friends', href: '#', icon: CubeIcon, current: router.pathname === '/profile' },
   ];
   return (
-    <aside className="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-20 dark:border-dark-third">
+    <aside className="dark:border-dark-third flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0 lg:py-20">
       <nav className="flex-none px-4 sm:px-6 lg:px-0">
         <ul role="list" className="flex gap-x-3 gap-y-1 whitespace-nowrap lg:flex-col">
           {secondaryNavigation.map((item) => (
@@ -42,8 +41,8 @@ export default function Sidebar() {
                 href={item.href}
                 className={classNames(
                   item.current
-                    ? 'bg-gray-50 text-indigo-600 dark:bg-dark-second dark:text-dark-accent'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-dark-txt dark:hover:bg-dark-second dark:hover:text-dark-accent',
+                    ? 'dark:bg-dark-second dark:text-dark-accent bg-gray-50 text-indigo-600'
+                    : 'dark:text-dark-txt dark:hover:bg-dark-second dark:hover:text-dark-accent text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
                   'group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm/6 font-semibold',
                 )}
               >

@@ -43,9 +43,7 @@ export default function EditImage({
   variant = 'profile',
   title = 'File',
   description = '',
-  
 }: ComponentProps) {
-  
   const handleDrop = (acceptedFiles: File[]) => {
     const acceptedFile = acceptedFiles[0];
 
@@ -109,7 +107,6 @@ export default function EditImage({
 
   const isValidUrl = (string: string) => {
     try {
-      // eslint-disable-next-line
       const url = new URL(string);
       return true;
     } catch {
@@ -118,12 +115,9 @@ export default function EditImage({
   };
 
   const getSrcUrl = () => {
-
-    
     if (isValidUrl(data)) {
       return data;
     }
-
 
     if (encoding === 'base64' && data?.file) {
       return data.file;
@@ -174,7 +168,9 @@ export default function EditImage({
           <Line
             percent={percentage}
             strokeWidth={2}
-            strokeColor={percentage < PROGRESS_THRESHOLD ? PROGRESS_COLOR_INCOMPLETE : PROGRESS_COLOR_COMPLETE}
+            strokeColor={
+              percentage < PROGRESS_THRESHOLD ? PROGRESS_COLOR_INCOMPLETE : PROGRESS_COLOR_COMPLETE
+            }
           />
         </div>
       </div>
@@ -197,7 +193,6 @@ export default function EditImage({
                 src={srcUrl}
                 alt=""
                 className="h-32 w-auto rounded-full object-cover object-center"
-                
               />
             )}
           </div>
@@ -218,7 +213,11 @@ export default function EditImage({
             <Line
               percent={percentage}
               strokeWidth={2}
-              strokeColor={percentage < PROGRESS_THRESHOLD ? PROGRESS_COLOR_INCOMPLETE : PROGRESS_COLOR_COMPLETE}
+              strokeColor={
+                percentage < PROGRESS_THRESHOLD
+                  ? PROGRESS_COLOR_INCOMPLETE
+                  : PROGRESS_COLOR_COMPLETE
+              }
             />
           </div>
         </div>

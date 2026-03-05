@@ -30,7 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       headers: {
         Accept: 'application/json',
         Authorization: `JWT ${accessToken}`,
-        
       },
     });
 

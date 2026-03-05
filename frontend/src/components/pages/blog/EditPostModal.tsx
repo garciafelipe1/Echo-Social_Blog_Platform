@@ -68,7 +68,6 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
 
   useEffect(() => {
     if (post) {
-      
       setTitle(post?.title || '');
       setDescription(post?.description || '');
       setPostSlug(post?.slug || '');
@@ -100,14 +99,19 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
       formData.append('category', category);
       formData.append('status', status);
 
-      if (thumbnail && typeof thumbnail === 'object' && 'file' in thumbnail && thumbnail.file && typeof thumbnail.file !== 'string') {
+      if (
+        thumbnail &&
+        typeof thumbnail === 'object' &&
+        'file' in thumbnail &&
+        thumbnail.file &&
+        typeof thumbnail.file !== 'string'
+      ) {
         formData.append(
           'thumbnail',
           thumbnail.file,
           `thumbnail_${Date.now()}_${thumbnail.file.name.replace(/\s/g, '_')}`,
         );
       }
-      
 
       const res = await fetch('/api/blog/post/update/', {
         method: 'PUT',

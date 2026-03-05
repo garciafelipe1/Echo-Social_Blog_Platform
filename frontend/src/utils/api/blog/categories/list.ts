@@ -1,4 +1,4 @@
-import buildQueryString from "@/utils/BuildQueryString"
+import buildQueryString from '@/utils/BuildQueryString';
 
 export interface fetchCategoriesProps {
   parent_slug?: string;
@@ -9,19 +9,14 @@ export interface fetchCategoriesProps {
   page_size?: number;
 }
 
-
-
-export default async function fetchCategories(props:fetchCategoriesProps) {
-    try{
-           const res = await fetch(`/api/blog/categories/list/?${buildQueryString(props)}`);
-            const data=await res.json()
-            return data
-        }catch(err){
-            return null
-        }
-
+export default async function fetchCategories(props: fetchCategoriesProps) {
+  try {
+    const res = await fetch(`/api/blog/categories/list/?${buildQueryString(props)}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    return null;
+  }
 }
 
-fetchCategories.defaultProps = {
-
-};
+fetchCategories.defaultProps = {};

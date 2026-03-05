@@ -1,5 +1,5 @@
-import inputClassName from "@/utils/api/inputClassName";
-import inputFormClassName from "@/utils/api/InputFormClassName";
+import inputClassName from '@/utils/api/inputClassName';
+import inputFormClassName from '@/utils/api/InputFormClassName';
 
 interface ComponentProps {
   data: string;

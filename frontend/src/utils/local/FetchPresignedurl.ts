@@ -1,4 +1,4 @@
-import { ToastError } from "@/components/toast/toast";
+import { ToastError } from '@/components/toast/toast';
 export interface ComponentProps {
   key: string; // Nombre deseado para el archivo local
   file: File; // El objeto File que quieres "subir" localmente

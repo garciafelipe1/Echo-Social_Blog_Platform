@@ -10,14 +10,14 @@ const TABS: { key: 'for_you' | 'following'; label: string }[] = [
 
 export default function FeedHeader({ activeTab, onTabChange }: Props) {
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-dark-third dark:bg-dark-main/80">
+    <header className="dark:border-dark-third dark:bg-dark-main/80 sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <div className="flex">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => onTabChange(tab.key)}
-            className="relative flex flex-1 justify-center py-4 text-[15px] font-semibold text-gray-900 transition-colors hover:bg-gray-50 dark:text-dark-txt dark:hover:bg-dark-second"
+            className="dark:text-dark-txt dark:hover:bg-dark-second relative flex flex-1 justify-center py-4 text-[15px] font-semibold text-gray-900 transition-colors hover:bg-gray-50"
           >
             {tab.label}
             {activeTab === tab.key && (

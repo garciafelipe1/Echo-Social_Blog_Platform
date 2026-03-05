@@ -26,53 +26,48 @@ export default function usePasswordValidation({
   const [canSubmit, setCanSubmit] = useState<boolean>(false);
 
   useEffect(() => {
-    if (password.length === 0 && rePassword.length === 0) {
-      setPasswordTouched(false);
-    } else {
-      setPasswordTouched(true);
-    }
+    queueMicrotask(() => {
+      if (password.length === 0 && rePassword.length === 0) {
+        setPasswordTouched(false);
+      } else {
+        setPasswordTouched(true);
+      }
 
-    // Verificar si la contraseña incluye el nombre de usuario (solo si se proporciona username)
-    const includesUsername = username
-      ? password.toLowerCase().includes(username.toLowerCase())
-      : false;
-    setUsernameIncluded(includesUsername);
+      const includesUsername = username
+        ? password.toLowerCase().includes(username.toLowerCase())
+        : false;
+      setUsernameIncluded(includesUsername);
 
-    // Verificar si las contraseñas coinciden
-    const match = password === rePassword;
-    setPasswordsMatch(match);
+      const match = password === rePassword;
+      setPasswordsMatch(match);
 
-    // Verificar si la contraseña tiene una longitud válida
-    const validPasswordLength =
-      password.length >= minPasswordLength && password.length <= maxPasswordLength;
-    setValidLength(validPasswordLength);
+      const validPasswordLength =
+        password.length >= minPasswordLength && password.length <= maxPasswordLength;
+      setValidLength(validPasswordLength);
 
-    // Verificar si la contraseña contiene números
-    const passwordHasNumbers = /\d/.test(password);
-    setHasNumbers(passwordHasNumbers);
+      const passwordHasNumbers = /\d/.test(password);
+      setHasNumbers(passwordHasNumbers);
 
-    // Verificar si la contraseña contiene símbolos
-    const passwordHasSymbols = /[~!@#$%^&*(),.|_+":;'`?><{}[\]\\]/.test(password);
-    setHasSymbols(passwordHasSymbols);
+      const passwordHasSymbols = /[~!@#$%^&*(),.|_+":;'`?><{}[\]\\]/.test(password);
+      setHasSymbols(passwordHasSymbols);
 
-    // Verificar si la contraseña contiene letras minúsculas y mayúsculas
-    const passwordHasLowercase = /[a-z]/.test(password);
-    setHasLowercaseText(passwordHasLowercase);
+      const passwordHasLowercase = /[a-z]/.test(password);
+      setHasLowercaseText(passwordHasLowercase);
 
-    const passwordHasUppercase = /[A-Z]/.test(password);
-    setHasUppercaseText(passwordHasUppercase);
+      const passwordHasUppercase = /[A-Z]/.test(password);
+      setHasUppercaseText(passwordHasUppercase);
 
-    // Verificar si se puede enviar el formulario
-    const canSubmitForm =
-      match &&
-      validPasswordLength &&
-      passwordHasNumbers &&
-      passwordHasSymbols &&
-      passwordHasLowercase &&
-      passwordHasUppercase &&
-      (!username || !includesUsername);
+      const canSubmitForm =
+        match &&
+        validPasswordLength &&
+        passwordHasNumbers &&
+        passwordHasSymbols &&
+        passwordHasLowercase &&
+        passwordHasUppercase &&
+        (!username || !includesUsername);
 
-    setCanSubmit(canSubmitForm);
+      setCanSubmit(canSubmitForm);
+    });
   }, [password, rePassword, username, minPasswordLength, maxPasswordLength]);
 
   function PasswordValidationText() {

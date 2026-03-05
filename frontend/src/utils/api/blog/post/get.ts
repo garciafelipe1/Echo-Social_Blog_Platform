@@ -8,7 +8,6 @@ export default async function fetchPost({ slug }: ComponentProps) {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        
       },
     });
 

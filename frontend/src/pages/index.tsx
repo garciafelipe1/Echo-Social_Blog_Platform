@@ -61,12 +61,10 @@ export default function Home() {
         <FeedComposer />
         <div className="min-h-[60vh]">
           {loading && posts.length === 0 ? (
-            Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-              <FeedSkeleton key={i} />
-            ))
+            Array.from({ length: SKELETON_COUNT }).map((_, i) => <FeedSkeleton key={i} />)
           ) : posts.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-              <p className="text-[15px] text-gray-500 dark:text-dark-txt-secondary">
+              <p className="dark:text-dark-txt-secondary text-[15px] text-gray-500">
                 {isFollowingTab
                   ? 'No hay publicaciones de personas que sigues.'
                   : 'Aun no hay publicaciones en tu feed.'}

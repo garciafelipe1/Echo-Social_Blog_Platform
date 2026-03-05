@@ -8,7 +8,7 @@ export default function DarkModeButton() {
   const [mounted, setMounted] = useState<boolean>(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   const renderThemeChanger = () => {

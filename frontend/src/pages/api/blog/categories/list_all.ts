@@ -1,7 +1,4 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -10,13 +7,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-
   try {
     const apiRes = await fetch(`${process.env.API_URL}/api/blog/categories/list/`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        
       },
     });
 

@@ -34,14 +34,7 @@ export default function BlogPage() {
     refetch: refetchFeatured,
   } = usePosts({ showFeatured: true });
 
-  const {
-    posts,
-    loading,
-    loadMore,
-    loadingMore,
-    nextUrl,
-    refetch,
-  } = usePosts({
+  const { posts, loading, loadMore, loadingMore, nextUrl, refetch } = usePosts({
     showFeatured: false,
     category: activeCategory || undefined,
   });
@@ -68,11 +61,10 @@ export default function BlogPage() {
     refetchFeatured();
   }, [refetch, refetchFeatured]);
 
-  const showDevTools =
-    isAuthenticated && process.env.NODE_ENV === 'development';
+  const showDevTools = isAuthenticated && process.env.NODE_ENV === 'development';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-main">
+    <div className="dark:bg-dark-main min-h-screen bg-gray-50">
       <BlogPageHeader
         categories={categories}
         activeCategory={activeCategory}
@@ -92,11 +84,7 @@ export default function BlogPage() {
         {/* Hero post destacado */}
         {!activeCategory && !debouncedSearch && (
           <section className="mb-8 sm:mb-10">
-            {loadingFeatured ? (
-              <BlogHeroSkeleton />
-            ) : (
-              heroPost && <BlogHero post={heroPost} />
-            )}
+            {loadingFeatured ? <BlogHeroSkeleton /> : heroPost && <BlogHero post={heroPost} />}
           </section>
         )}
 
@@ -110,15 +98,25 @@ export default function BlogPage() {
             </div>
           ) : filteredPosts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100 dark:bg-dark-second">
-                <svg className="size-7 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+              <div className="dark:bg-dark-second mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100">
+                <svg
+                  className="size-7 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                  />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-dark-txt">
+              <p className="dark:text-dark-txt text-sm font-medium text-gray-900">
                 No se encontraron publicaciones
               </p>
-              <p className="mt-1 text-sm text-gray-500 dark:text-dark-txt-secondary">
+              <p className="dark:text-dark-txt-secondary mt-1 text-sm text-gray-500">
                 {debouncedSearch
                   ? `Sin resultados para "${debouncedSearch}"`
                   : 'Aún no hay publicaciones en esta categoría.'}

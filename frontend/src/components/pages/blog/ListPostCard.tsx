@@ -49,7 +49,7 @@ export default function ListPostCard({
   });
 
   return (
-    <article className="group border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50/60 dark:border-dark-third dark:hover:bg-dark-second/50">
+    <article className="dark:border-dark-third dark:hover:bg-dark-second/50 group border-b border-gray-100 px-4 py-3 transition-colors hover:bg-gray-50/60">
       <div className="flex gap-2.5">
         {/* Avatar */}
         <Link href={`/@/${post?.user?.username}/`} className="shrink-0">
@@ -73,18 +73,18 @@ export default function ListPostCard({
           <div className="flex items-center gap-1 text-[13px] leading-tight">
             <Link
               href={`/@/${post?.user?.username}/`}
-              className="truncate font-semibold text-gray-900 hover:underline dark:text-dark-txt"
+              className="dark:text-dark-txt truncate font-semibold text-gray-900 hover:underline"
             >
               {post?.user?.username}
             </Link>
-            <span className="text-gray-400 dark:text-dark-txt-secondary">·</span>
-            <span className="shrink-0 text-gray-400 dark:text-dark-txt-secondary">
+            <span className="dark:text-dark-txt-secondary text-gray-400">·</span>
+            <span className="dark:text-dark-txt-secondary shrink-0 text-gray-400">
               {post?.category?.name}
             </span>
-            <span className="text-gray-400 dark:text-dark-txt-secondary">·</span>
+            <span className="dark:text-dark-txt-secondary text-gray-400">·</span>
             <time
               dateTime={post?.created_at}
-              className="shrink-0 text-gray-400 dark:text-dark-txt-secondary"
+              className="dark:text-dark-txt-secondary shrink-0 text-gray-400"
               title={post?.created_at ? moment(post.created_at).format('LL [a las] HH:mm') : ''}
             >
               {post?.created_at ? moment(post.created_at).fromNow(true) : ''}
@@ -95,7 +95,7 @@ export default function ListPostCard({
               <button
                 type="button"
                 onClick={() => setOpenMenu(!openMenu)}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-dark-third dark:hover:text-dark-txt"
+                className="dark:hover:bg-dark-third dark:hover:text-dark-txt rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 sm:opacity-0 sm:group-hover:opacity-100"
                 aria-label="Más opciones"
               >
                 <EllipsisHorizontalIcon className="h-4 w-4" />
@@ -107,14 +107,14 @@ export default function ListPostCard({
                     aria-hidden
                     onClick={() => setOpenMenu(false)}
                   />
-                  <div className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-gray-200 bg-white py-0.5 shadow-lg dark:border-dark-third dark:bg-dark-bg">
+                  <div className="dark:border-dark-third dark:bg-dark-bg absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-gray-200 bg-white py-0.5 shadow-lg">
                     <button
                       type="button"
                       onClick={() => {
                         setOpenMenu(false);
                         setOpenEdit(true);
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50 dark:text-dark-txt dark:hover:bg-dark-third"
+                      className="dark:text-dark-txt dark:hover:bg-dark-third flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50"
                     >
                       <PencilSquareIcon className="h-3.5 w-3.5" /> Editar
                     </button>
@@ -136,7 +136,7 @@ export default function ListPostCard({
 
           {/* Content + thumbnail */}
           <Link href={postUrl} className="mt-0.5 flex gap-3 outline-none">
-            <p className="flex-1 text-[14px] leading-snug text-gray-800 line-clamp-2 dark:text-dark-txt">
+            <p className="dark:text-dark-txt line-clamp-2 flex-1 text-[14px] leading-snug text-gray-800">
               {post?.description || post?.title}
             </p>
             {post?.thumbnail && (
@@ -153,12 +153,14 @@ export default function ListPostCard({
           </Link>
 
           {/* Actions — Twitter style */}
-          <div className="-ml-2 mt-0.5 flex items-center justify-between text-gray-400 dark:text-dark-txt-secondary">
+          <div className="dark:text-dark-txt-secondary -ml-2 mt-0.5 flex items-center justify-between text-gray-400">
             <button
               type="button"
               onClick={toggleLike}
               className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors duration-200 ${
-                liked ? 'text-red-500 hover:bg-red-500/10' : 'hover:bg-red-500/10 hover:text-red-500'
+                liked
+                  ? 'text-red-500 hover:bg-red-500/10'
+                  : 'hover:bg-red-500/10 hover:text-red-500'
               }`}
               aria-label={liked ? 'Quitar me gusta' : 'Me gusta'}
             >
@@ -173,7 +175,9 @@ export default function ListPostCard({
               aria-label="Comentar"
             >
               <ChatBubbleOvalLeftIcon className="h-4 w-4" />
-              <span className="min-w-[1ch]">{(post?.comments_count ?? 0) > 0 ? post.comments_count : ''}</span>
+              <span className="min-w-[1ch]">
+                {(post?.comments_count ?? 0) > 0 ? post.comments_count : ''}
+              </span>
             </Link>
             <Link
               href={postUrl}

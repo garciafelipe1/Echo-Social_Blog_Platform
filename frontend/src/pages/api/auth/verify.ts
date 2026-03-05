@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     if (apiRes.status === 200) {
       return res.status(apiRes.status).json({ name: 'Access token verified' });
-    }else{
+    } else {
       return res.status(401).json({
         error: 'acces token failed',
       });

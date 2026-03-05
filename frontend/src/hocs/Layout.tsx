@@ -1,15 +1,15 @@
-import Navbar from "@/features/navbar";
-import Footer from "@/features/footer";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/reducers";
-import { UnknownAction } from "redux";
-import { ThunkDispatch } from "redux-thunk";
-import { useEffect, useState, useCallback } from "react";
-import { loadProfile, loadUser } from "@/redux/actions/auth/actions";
-import SearchModal from "@/components/search/SearchModal";
+import Navbar from '@/features/navbar';
+import Footer from '@/features/footer';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/reducers';
+import { UnknownAction } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { useEffect, useState, useCallback } from 'react';
+import { loadProfile, loadUser } from '@/redux/actions/auth/actions';
+import SearchModal from '@/components/search/SearchModal';
 
 interface pageProps {
-    children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function Layout({ children }: pageProps) {
@@ -37,14 +37,14 @@ export default function Layout({ children }: pageProps) {
 
   const handleSearchClick = useCallback(() => setSearchOpen(true), []);
 
-    return (
-      <div className="min-h-screen bg-white text-gray-900 dark:bg-dark-main dark:text-dark-txt">
-        <Navbar onSearchClick={handleSearchClick} />
-        <div className="pb-16 md:pb-0">{children}</div>
-        <div className="hidden md:block">
-          <Footer />
-        </div>
-        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+  return (
+    <div className="dark:bg-dark-main dark:text-dark-txt min-h-screen bg-white text-gray-900">
+      <Navbar onSearchClick={handleSearchClick} />
+      <div className="pb-16 md:pb-0">{children}</div>
+      <div className="hidden md:block">
+        <Footer />
       </div>
-    );
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </div>
+  );
 }

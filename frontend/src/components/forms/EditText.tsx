@@ -28,19 +28,18 @@ export default function EditText({
     let inputValue = e.target.value;
 
     inputValue = inputValue.replace(/^a-zA-Z0-9\s',:.?-ÁÉÍÓÚáéíóú]+$/g, '');
-      
+
     setData(inputValue);
   };
 
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <span className="text-grey-800 dark:text-dark-txt block text-sm font-bold">{title}</span>
       <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
         {description}
       </span>
       <div className={`${inputFormClassName}`}>
         <input
-        
           type="text"
           required={required}
           disabled={disable}
@@ -51,8 +50,8 @@ export default function EditText({
           onChange={handleInputChange}
         />
         {showmMaxTextLength && (
-          <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3'>
-            <span className='dark:text-dark-txt-secondary text-gray-500 sm:text-sm'>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <span className="dark:text-dark-txt-secondary text-gray-500 sm:text-sm">
               {data?.length} of {maxTextLength}
             </span>
           </div>

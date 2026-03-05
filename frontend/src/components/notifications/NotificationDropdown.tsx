@@ -17,12 +17,10 @@ export default function NotificationDropdown({
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden />
-      <div className="fixed inset-x-0 top-0 z-50 h-full overflow-hidden bg-white shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:h-auto sm:w-96 sm:rounded-xl sm:border sm:border-gray-200 dark:bg-dark-main sm:dark:border-dark-third">
+      <div className="dark:bg-dark-main sm:dark:border-dark-third fixed inset-x-0 top-0 z-50 h-full overflow-hidden bg-white shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:h-auto sm:w-96 sm:rounded-xl sm:border sm:border-gray-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-dark-third">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-dark-txt">
-            Notificaciones
-          </h3>
+        <div className="dark:border-dark-third flex items-center justify-between border-b border-gray-100 px-4 py-3">
+          <h3 className="dark:text-dark-txt text-sm font-bold text-gray-900">Notificaciones</h3>
           <button
             type="button"
             onClick={onMarkAllRead}
@@ -37,11 +35,9 @@ export default function NotificationDropdown({
           {loading && notifications.length === 0 ? (
             <div className="py-8 text-center text-sm text-gray-400">Cargando...</div>
           ) : notifications.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-400">
-              No tienes notificaciones.
-            </div>
+            <div className="py-8 text-center text-sm text-gray-400">No tienes notificaciones.</div>
           ) : (
-            <div className="divide-y divide-gray-50 dark:divide-dark-third">
+            <div className="dark:divide-dark-third divide-y divide-gray-50">
               {notifications.map((n) => (
                 <NotificationItem key={n.id} notification={n} onClose={onClose} />
               ))}

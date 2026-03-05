@@ -1,5 +1,5 @@
 import '@/styles/globals.css';
-import'@/styles/slider.css'
+import '@/styles/slider.css';
 import type { NextComponentType, NextPageContext } from 'next';
 import type { AppProps } from 'next/app';
 import { ToastContainer } from 'react-toastify';
@@ -12,18 +12,15 @@ import { ThemeProvider } from 'next-themes';
 import wrapper from '@/redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 
-
-
-
 export type NextLayoutComponentType<P = {}> = NextComponentType<NextPageContext, any, P> & {
   getLayout?: (page: React.ReactNode) => React.ReactNode;
 };
 
 export default function App({ Component, pageProps }: AppProps) {
-  const getLayout = (Component as NextLayoutComponentType).getLayout || ((page:React.ReactNode) => page);
+  const getLayout =
+    (Component as NextLayoutComponentType).getLayout || ((page: React.ReactNode) => page);
 
-  const {store, props} = wrapper.useWrappedStore(pageProps);
-
+  const { store, props } = wrapper.useWrappedStore(pageProps);
 
   return (
     <Provider store={store}>

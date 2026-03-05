@@ -34,18 +34,18 @@ export default function FeedLeftSidebar() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = useSelector((state: RootState) => state.auth.profile);
-  const filteredItems = NAV_ITEMS.filter(
-    (item) => !item.authRequired || isAuthenticated,
-  ).map((item) =>
-    item.label === 'Perfil' && user?.username
-      ? { ...item, href: `/@/${user.username}` }
-      : item,
+  const filteredItems = NAV_ITEMS.filter((item) => !item.authRequired || isAuthenticated).map(
+    (item) =>
+      item.label === 'Perfil' && user?.username ? { ...item, href: `/@/${user.username}` } : item,
   );
 
   return (
     <nav className="sticky top-4 flex flex-col items-end pr-4 xl:items-start xl:pr-8">
       {/* Logo */}
-      <Link href="/" className="mb-4 rounded-full p-3 transition-colors hover:bg-gray-100 dark:hover:bg-dark-second">
+      <Link
+        href="/"
+        className="dark:hover:bg-dark-second mb-4 rounded-full p-3 transition-colors hover:bg-gray-100"
+      >
         <Image
           src="/assets/img/logos/F.png"
           width={28}
@@ -61,7 +61,7 @@ export default function FeedLeftSidebar() {
           <li key={item.label}>
             <Link
               href={item.href}
-              className="flex items-center gap-4 rounded-full px-4 py-3 text-[19px] text-gray-900 transition-colors hover:bg-gray-100 dark:text-dark-txt dark:hover:bg-dark-second"
+              className="dark:text-dark-txt dark:hover:bg-dark-second flex items-center gap-4 rounded-full px-4 py-3 text-[19px] text-gray-900 transition-colors hover:bg-gray-100"
             >
               <item.icon className="h-[26px] w-[26px]" />
               <span className="hidden xl:inline">{item.label}</span>
@@ -85,7 +85,7 @@ export default function FeedLeftSidebar() {
       {isAuthenticated && user && (
         <Link
           href={`/@/${user.username}`}
-          className="mt-auto flex items-center gap-3 rounded-full p-3 transition-colors hover:bg-gray-100 xl:mt-8 dark:hover:bg-dark-second"
+          className="dark:hover:bg-dark-second mt-auto flex items-center gap-3 rounded-full p-3 transition-colors hover:bg-gray-100 xl:mt-8"
         >
           {profile?.profile_picture ? (
             <Image
@@ -96,13 +96,17 @@ export default function FeedLeftSidebar() {
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600 dark:bg-dark-third dark:text-dark-txt">
+            <span className="dark:bg-dark-third dark:text-dark-txt flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600">
               {user.username?.charAt(0)?.toUpperCase() || '?'}
             </span>
           )}
           <div className="hidden min-w-0 xl:block">
-            <p className="truncate text-sm font-semibold text-gray-900 dark:text-dark-txt">{user.username}</p>
-            <p className="truncate text-xs text-gray-500 dark:text-dark-txt-secondary">@{user.username}</p>
+            <p className="dark:text-dark-txt truncate text-sm font-semibold text-gray-900">
+              {user.username}
+            </p>
+            <p className="dark:text-dark-txt-secondary truncate text-xs text-gray-500">
+              @{user.username}
+            </p>
           </div>
         </Link>
       )}

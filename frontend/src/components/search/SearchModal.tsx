@@ -49,9 +49,9 @@ export default function SearchModal({ open, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-start justify-center sm:pt-[15vh]">
       <div className="fixed inset-0 bg-black/40" onClick={onClose} aria-hidden />
 
-      <div className="relative z-10 flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-w-lg sm:rounded-xl sm:border sm:border-gray-200 dark:bg-dark-main sm:dark:border-dark-third">
+      <div className="dark:bg-dark-main sm:dark:border-dark-third relative z-10 flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-w-lg sm:rounded-xl sm:border sm:border-gray-200">
         {/* Search input */}
-        <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 dark:border-dark-third">
+        <div className="dark:border-dark-third flex items-center gap-3 border-b border-gray-100 px-4 py-3">
           <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-gray-400" />
           <input
             ref={inputRef}
@@ -59,7 +59,7 @@ export default function SearchModal({ open, onClose }: Props) {
             value={query}
             onChange={(e) => search(e.target.value)}
             placeholder="Buscar posts, usuarios, categorias..."
-            className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-dark-txt"
+            className="dark:text-dark-txt flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
           />
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <XMarkIcon className="h-5 w-5" />
@@ -79,7 +79,7 @@ export default function SearchModal({ open, onClose }: Props) {
           )}
 
           {!loading && hasResults && (
-            <div className="divide-y divide-gray-100 dark:divide-dark-third">
+            <div className="dark:divide-dark-third divide-y divide-gray-100">
               {/* Users */}
               {results.users.length > 0 && (
                 <div className="px-4 py-3">
@@ -92,7 +92,7 @@ export default function SearchModal({ open, onClose }: Props) {
                         key={u.username}
                         href={`/@/${u.username}/`}
                         onClick={onClose}
-                        className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-gray-50 dark:hover:bg-dark-second"
+                        className="dark:hover:bg-dark-second flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-gray-50"
                       >
                         {u.profile_picture ? (
                           <Image
@@ -108,7 +108,7 @@ export default function SearchModal({ open, onClose }: Props) {
                           </span>
                         )}
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-dark-txt">
+                          <p className="dark:text-dark-txt text-sm font-medium text-gray-900">
                             {u.first_name} {u.last_name}
                           </p>
                           <p className="text-xs text-gray-400">@{u.username}</p>
@@ -131,7 +131,7 @@ export default function SearchModal({ open, onClose }: Props) {
                         key={p.id}
                         href={`/blog/post/${p.slug}`}
                         onClick={onClose}
-                        className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 dark:hover:bg-dark-second"
+                        className="dark:hover:bg-dark-second flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50"
                       >
                         {p.thumbnail && (
                           <Image
@@ -143,12 +143,10 @@ export default function SearchModal({ open, onClose }: Props) {
                           />
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-gray-900 dark:text-dark-txt">
+                          <p className="dark:text-dark-txt truncate text-sm font-medium text-gray-900">
                             {p.title}
                           </p>
-                          <p className="truncate text-xs text-gray-400">
-                            @{p.user?.username}
-                          </p>
+                          <p className="truncate text-xs text-gray-400">@{p.user?.username}</p>
                         </div>
                       </Link>
                     ))}
@@ -168,7 +166,7 @@ export default function SearchModal({ open, onClose }: Props) {
                         key={c.slug}
                         href={`/blog?category=${c.slug}`}
                         onClick={onClose}
-                        className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-dark-second dark:text-dark-txt dark:hover:bg-dark-third"
+                        className="dark:bg-dark-second dark:text-dark-txt dark:hover:bg-dark-third rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-200"
                       >
                         {c.name}
                       </Link>
@@ -181,7 +179,7 @@ export default function SearchModal({ open, onClose }: Props) {
 
           {!query && (
             <div className="px-4 py-6 text-center text-sm text-gray-400">
-              <kbd className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium dark:bg-dark-second">
+              <kbd className="dark:bg-dark-second rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium">
                 Ctrl+K
               </kbd>{' '}
               para buscar

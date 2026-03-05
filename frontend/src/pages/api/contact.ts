@@ -10,9 +10,7 @@ interface ContactPayload {
 function isValidPayload(body: unknown): body is ContactPayload {
   if (typeof body !== 'object' || body === null) return false;
   const { name, email, subject, message } = body as Record<string, unknown>;
-  return [name, email, subject, message].every(
-    (v) => typeof v === 'string' && v.trim().length > 0,
-  );
+  return [name, email, subject, message].every((v) => typeof v === 'string' && v.trim().length > 0);
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

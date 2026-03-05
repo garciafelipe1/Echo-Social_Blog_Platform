@@ -1,10 +1,10 @@
 import Button from '@/components/Button';
 import EditPassword from '@/components/forms/EditPassword';
 import LoadingMoon from '@/components/loaders/LoadingMoon';
-import { ToastError} from '@/components/toast/toast';
+import { ToastError } from '@/components/toast/toast';
 import Layout from '@/hocs/Layout';
 import usePasswordValidation from '@/hooks/usePasswordValidation';
-import { forgot_password_confirm, } from '@/redux/actions/auth/actions';
+import { forgot_password_confirm } from '@/redux/actions/auth/actions';
 import { IForgotPasswordConfirmProps } from '@/redux/actions/auth/interfaces';
 import { useSearchParams } from 'next/navigation';
 

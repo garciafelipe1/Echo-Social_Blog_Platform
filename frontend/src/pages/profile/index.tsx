@@ -50,10 +50,10 @@ export default function Page() {
       <div>
         <div className="-ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
           <div className="ml-4 mt-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-dark-txt">
+            <h3 className="dark:text-dark-txt text-base font-semibold text-gray-900">
               Información del usuario
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-dark-txt-secondary">
+            <p className="dark:text-dark-txt-secondary mt-1 text-sm text-gray-500">
               Esta información será visible en tu perfil público.
             </p>
           </div>
@@ -75,12 +75,12 @@ export default function Page() {
       </div>
 
       <div>
-        <h2 className="text-base/7 font-semibold text-gray-900 dark:text-dark-txt">Perfil</h2>
-        <p className="mt-1 text-sm/6 text-gray-500 dark:text-dark-txt-secondary">
+        <h2 className="dark:text-dark-txt text-base/7 font-semibold text-gray-900">Perfil</h2>
+        <p className="dark:text-dark-txt-secondary mt-1 text-sm/6 text-gray-500">
           Tu información pública de perfil.
         </p>
 
-        <ul className="mt-6 divide-y divide-gray-100 border-t border-gray-200 text-sm/6 dark:divide-dark-third dark:border-dark-third">
+        <ul className="dark:divide-dark-third dark:border-dark-third mt-6 divide-y divide-gray-100 border-t border-gray-200 text-sm/6">
           <ProfileImageSection
             profilePicture={images.profilePicture}
             onLoadProfilePicture={images.onLoadProfilePicture}
@@ -92,7 +92,7 @@ export default function Page() {
             bannerPicturePercentage={images.bannerPicturePercentage}
           />
           <li className="py-6 sm:flex">
-            <h4 className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+            <h4 className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
               Biography
             </h4>
             <div className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
@@ -100,7 +100,7 @@ export default function Page() {
             </div>
           </li>
           <li className="py-6 sm:flex">
-            <h4 className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+            <h4 className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
               Birthday
             </h4>
             <div className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">

@@ -1,9 +1,6 @@
-
 import buildQueryString from '@/utils/BuildQueryString';
 import parseCookies from '@/utils/cookies/parseCookies';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -19,14 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const apiRes = await fetch(`${process.env.API_URL}/api/blog/post/author/?${buildQueryString(req.query)}`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `JWT ${accessToken}`,
-        
+    const apiRes = await fetch(
+      `${process.env.API_URL}/api/blog/post/author/?${buildQueryString(req.query)}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `JWT ${accessToken}`,
+        },
       },
-    });
+    );
 
     const data = await apiRes.json();
     return res.status(apiRes.status).json(data);

@@ -52,7 +52,10 @@ export default function PostCardList({ post }: ComponentProps) {
                 className="size-6 flex-none rounded-full bg-gray-50 object-cover"
               />
             ) : (
-              <span className="flex size-6 flex-none items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500" aria-hidden>
+              <span
+                className="flex size-6 flex-none items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500"
+                aria-hidden
+              >
                 {post?.user?.username?.charAt(0)?.toUpperCase() || '?'}
               </span>
             )}

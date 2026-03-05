@@ -17,7 +17,12 @@ export default function GenerateDemoPostsButton({ onSuccess }: Props) {
         ToastSuccess(data?.message || data?.response || 'Posts de prueba generados. Recargando…');
         onSuccess();
       } else {
-        const msg = data?.response ?? data?.error ?? data?.detail ?? data?.message ?? 'Error al generar posts';
+        const msg =
+          data?.response ??
+          data?.error ??
+          data?.detail ??
+          data?.message ??
+          'Error al generar posts';
         ToastError(typeof msg === 'string' ? msg : 'Error al generar posts');
       }
     } catch {

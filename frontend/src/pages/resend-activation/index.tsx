@@ -15,11 +15,10 @@ import { IResendActivationProps } from '@/redux/actions/auth/interfaces';
 import { resend_activation } from '@/redux/actions/auth/actions';
 
 export default function Page() {
-  
-  const [email, setEmail]=useState<string>('')
+  const [email, setEmail] = useState<string>('');
   const dispatch: ThunkDispatch<any, any, UnknownAction> = useDispatch();
   const [loading, setLoading] = useState<boolean>(false);
-  const emailRegex= /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -27,20 +26,18 @@ export default function Page() {
       ToastError('a valid email is required');
     }
 
-    const resendActivationData: IResendActivationProps={
-      email
-    }
-    try{
-      setLoading(true)
-      await dispatch(resend_activation(resendActivationData))
-    }catch (err){
+    const resendActivationData: IResendActivationProps = {
+      email,
+    };
+    try {
+      setLoading(true);
+      await dispatch(resend_activation(resendActivationData));
+    } catch (err) {
       // Error handled by Redux action
-    }finally{
-      setLoading(false)
-
+    } finally {
+      setLoading(false);
     }
-  }
-    
+  };
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-32 lg:px-8">
@@ -66,10 +63,7 @@ export default function Page() {
         </form>
         <p className="mt-10 text-center text-sm/6 text-gray-500">
           No tienes cuenta? {''}
-          <Link
-            href="/register"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
-          >
+          <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
             Reegistrate
           </Link>
         </p>

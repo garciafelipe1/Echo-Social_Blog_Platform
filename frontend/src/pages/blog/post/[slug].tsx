@@ -17,7 +17,7 @@ export default function PostDetailPage({
   if (!post) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-gray-500 dark:text-dark-txt-secondary">Post no encontrado.</p>
+        <p className="dark:text-dark-txt-secondary text-gray-500">Post no encontrado.</p>
       </div>
     );
   }

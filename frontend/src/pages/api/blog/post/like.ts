@@ -42,10 +42,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const slug = req.query.slug as string;
       if (!slug) return res.status(400).json({ error: 'slug es requerido' });
 
-      const apiRes = await fetch(`${baseUrl}/api/blog/post/like/?slug=${encodeURIComponent(slug)}`, {
-        method: 'DELETE',
-        headers,
-      });
+      const apiRes = await fetch(
+        `${baseUrl}/api/blog/post/like/?slug=${encodeURIComponent(slug)}`,
+        {
+          method: 'DELETE',
+          headers,
+        },
+      );
 
       const data = await apiRes.json().catch(() => ({}));
       return res.status(apiRes.status).json(data);

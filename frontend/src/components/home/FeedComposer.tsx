@@ -70,7 +70,7 @@ export default function FeedComposer() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="border-b border-gray-200 px-4 py-3 dark:border-dark-third">
+    <div className="dark:border-dark-third border-b border-gray-200 px-4 py-3">
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="shrink-0">
@@ -83,7 +83,7 @@ export default function FeedComposer() {
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600 dark:bg-dark-third dark:text-dark-txt">
+            <span className="dark:bg-dark-third dark:text-dark-txt flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600">
               {user?.username?.charAt(0)?.toUpperCase() || '?'}
             </span>
           )}
@@ -95,7 +95,7 @@ export default function FeedComposer() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Que esta pasando?"
             rows={2}
-            className="w-full resize-none bg-transparent text-[17px] text-gray-900 outline-none placeholder:text-gray-400 dark:text-dark-txt dark:placeholder:text-dark-txt-secondary"
+            className="dark:text-dark-txt dark:placeholder:text-dark-txt-secondary w-full resize-none bg-transparent text-[17px] text-gray-900 outline-none placeholder:text-gray-400"
           />
 
           {/* Image preview */}
@@ -119,7 +119,7 @@ export default function FeedComposer() {
           )}
 
           {/* Toolbar */}
-          <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-2 dark:border-dark-third">
+          <div className="dark:border-dark-third mt-2 flex items-center justify-between border-t border-gray-100 pt-2">
             <div className="flex gap-1">
               <button
                 type="button"

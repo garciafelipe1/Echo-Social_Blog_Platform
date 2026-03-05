@@ -1,5 +1,3 @@
-
-
 export default async function fetchAllCategories() {
   try {
     const res = await fetch(`/api/blog/categories/list_all`);

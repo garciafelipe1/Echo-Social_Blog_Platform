@@ -10,15 +10,15 @@ interface ComponentProps {
 export default function CustomTabs({ titles, panels }: ComponentProps) {
   return (
     <TabGroup>
-      <TabList className="flex border-b border-gray-200 dark:border-dark-third">
+      <TabList className="dark:border-dark-third flex border-b border-gray-200">
         {titles.map((title) => (
           <Tab
             key={title}
             className={({ selected }) =>
               `relative flex-1 px-4 py-3 text-center text-sm font-semibold outline-none transition-colors ${
                 selected
-                  ? 'text-gray-900 dark:text-dark-txt'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-dark-txt-secondary dark:hover:text-dark-txt'
+                  ? 'dark:text-dark-txt text-gray-900'
+                  : 'dark:text-dark-txt-secondary dark:hover:text-dark-txt text-gray-500 hover:text-gray-700'
               }`
             }
           >

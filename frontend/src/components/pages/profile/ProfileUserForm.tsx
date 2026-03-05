@@ -10,14 +10,17 @@ interface Props {
 }
 
 export default function ProfileUserForm({
-  username, setUsername,
-  firstName, setFirstName,
-  lastName, setLastName,
+  username,
+  setUsername,
+  firstName,
+  setFirstName,
+  lastName,
+  setLastName,
 }: Props) {
   return (
-    <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm/6 dark:divide-dark-third dark:border-dark-third">
+    <dl className="dark:divide-dark-third dark:border-dark-third mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm/6">
       <div className="pt-6 sm:flex">
-        <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+        <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
           Username
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
@@ -25,7 +28,7 @@ export default function ProfileUserForm({
         </dd>
       </div>
       <div className="pt-6 sm:flex">
-        <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+        <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
           First Name
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
@@ -33,7 +36,7 @@ export default function ProfileUserForm({
         </dd>
       </div>
       <div className="pt-6 sm:flex">
-        <dt className="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6 dark:text-dark-txt">
+        <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
           Last Name
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
