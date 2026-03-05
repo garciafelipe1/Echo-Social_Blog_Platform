@@ -4,18 +4,35 @@ import { PaperAirplaneIcon, CheckIcon } from '@heroicons/react/24/outline';
 interface Props {
   title: string;
   url: string;
+  slug?: string;
   className?: string;
 }
 
-export default function ShareButton({ title, url, className = '' }: Props) {
+async function registerShare(slug: string, platform: string): Promise<void> {
+  const res = await fetch('/api/blog/post/share', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slug, plataform: platform }),
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    // silent - share already succeeded from user perspective
+  }
+}
+
+export default function ShareButton({ title, url, slug, className = '' }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = useCallback(async () => {
     const fullUrl = `${window.location.origin}${url}`;
+    let platform = 'other';
 
     if (navigator.share) {
       try {
         await navigator.share({ title, url: fullUrl });
+        if (slug) {
+          await registerShare(slug, platform);
+        }
         return;
       } catch {
         // user cancelled or share failed, fall through to clipboard
@@ -26,10 +43,13 @@ export default function ShareButton({ title, url, className = '' }: Props) {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      if (slug) {
+        await registerShare(slug, 'other');
+      }
     } catch {
       // silent
     }
-  }, [title, url]);
+  }, [title, url, slug]);
 
   return (
     <button

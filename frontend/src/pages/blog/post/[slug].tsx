@@ -9,10 +9,12 @@ import type { IPost } from '@/interfaces/blog/IPost';
 
 interface PageProps {
   post: IPost | null;
+  canonicalUrl?: string;
 }
 
 export default function PostDetailPage({
   post,
+  canonicalUrl,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   if (!post) {
     return (
@@ -25,12 +27,18 @@ export default function PostDetailPage({
   return (
     <>
       <Head>
-        <title>{post.title}</title>
+        <title>{post.title} | Echo</title>
         <meta name="description" content={post.description || post.title} />
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+        <meta property="og:type" content="article" />
         <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.description} />
+        <meta property="og:description" content={post.description || post.title} />
+        <meta property="og:site_name" content="Echo" />
         {post.thumbnail && <meta property="og:image" content={mediaUrl(post.thumbnail)} />}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.description || post.title} />
+        {post.thumbnail && <meta name="twitter:image" content={mediaUrl(post.thumbnail)} />}
       </Head>
 
       <div className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-8">
@@ -48,6 +56,10 @@ PostDetailPage.getLayout = function getLayout(page: ReactElement) {
 export const getServerSideProps: GetServerSideProps<PageProps> = async (ctx) => {
   const { slug } = ctx.params as { slug: string };
   const cookie = ctx.req.headers.cookie || '';
+  const proto = ctx.req.headers['x-forwarded-proto'];
+  const protocol = Array.isArray(proto) ? proto[0] : proto || 'http';
+  const host = ctx.req.headers.host || 'localhost:3000';
+  const canonicalUrl = `${protocol}://${host}/blog/post/${slug}`;
 
   try {
     const apiUrl = process.env.API_URL?.replace(/\/$/, '') || 'http://localhost:8000';
@@ -63,14 +75,14 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (ctx) => 
     });
 
     if (!res.ok) {
-      return { props: { post: null } };
+      return { props: { post: null, canonicalUrl } };
     }
 
     const data = await res.json();
     const post: IPost = data.results ?? data;
 
-    return { props: { post } };
+    return { props: { post, canonicalUrl } };
   } catch {
-    return { props: { post: null } };
+    return { props: { post: null, canonicalUrl } };
   }
 };

@@ -5,17 +5,27 @@ import { RootState } from '@/redux/reducers';
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { mediaUrl } from '@/utils/mediaUrl';
 import { ToastError } from '@/components/toast/toast';
+import usePostCategories from '@/hooks/usePostCategories';
 
-export default function FeedComposer() {
+interface FeedComposerProps {
+  onPostCreated?: () => void;
+}
+
+export default function FeedComposer({ onPostCreated }: FeedComposerProps) {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = useSelector((state: RootState) => state.auth.profile);
+  const { categories } = usePostCategories();
 
   const [content, setContent] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [categorySlug, setCategorySlug] = useState<string>('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Default to first category when categories load
+  const effectiveCategory = categorySlug || (categories?.[0]?.slug ?? '');
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,6 +42,10 @@ export default function FeedComposer() {
 
   const handleSubmit = useCallback(async () => {
     if (!content.trim() || submitting) return;
+    if (!effectiveCategory) {
+      ToastError('Selecciona una categoría para publicar');
+      return;
+    }
     setSubmitting(true);
 
     try {
@@ -42,7 +56,7 @@ export default function FeedComposer() {
       formData.append('content', `<p>${content.trim()}</p>`);
       formData.append('status', 'published');
       formData.append('slug', slug);
-      formData.append('category', 'social');
+      formData.append('category', effectiveCategory);
       if (thumbnail) {
         formData.append('thumbnail', thumbnail);
       }
@@ -55,7 +69,7 @@ export default function FeedComposer() {
       if (res.ok) {
         setContent('');
         clearImage();
-        window.location.reload();
+        onPostCreated?.();
       } else {
         const data = await res.json().catch(() => null);
         ToastError(data?.error || 'Error al publicar');
@@ -65,7 +79,7 @@ export default function FeedComposer() {
     } finally {
       setSubmitting(false);
     }
-  }, [content, thumbnail, submitting, clearImage]);
+  }, [content, thumbnail, submitting, clearImage, effectiveCategory, onPostCreated]);
 
   if (!isAuthenticated) return null;
 
@@ -97,6 +111,21 @@ export default function FeedComposer() {
             rows={2}
             className="dark:text-dark-txt dark:placeholder:text-dark-txt-secondary w-full resize-none bg-transparent text-[17px] text-gray-900 outline-none placeholder:text-gray-400"
           />
+
+          {/* Category selector */}
+          {categories.length > 0 && (
+            <select
+              value={effectiveCategory}
+              onChange={(e) => setCategorySlug(e.target.value)}
+              className="dark:border-dark-third dark:bg-dark-second dark:text-dark-txt mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm outline-none focus:border-violet-400"
+            >
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {/* Image preview */}
           {preview && (
@@ -139,7 +168,7 @@ export default function FeedComposer() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!content.trim() || submitting}
+              disabled={!content.trim() || submitting || !effectiveCategory}
               className="rounded-full bg-violet-600 px-5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? 'Publicando...' : 'Publicar'}

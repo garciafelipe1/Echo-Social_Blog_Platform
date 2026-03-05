@@ -9,9 +9,9 @@ import {
   ArrowPathRoundedSquareIcon,
   ChartBarIcon,
   BookmarkIcon,
-  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import ShareButton from '@/components/shared/ShareButton';
 import { formatCompact } from '@/utils/formatNumber';
 import { mediaUrl } from '@/utils/mediaUrl';
 
@@ -98,8 +98,7 @@ export default function FeedPostCard({ post }: FeedPostCardProps) {
                   height={287}
                   alt={post?.title || ''}
                   src={mediaUrl(post.thumbnail)}
-                  className="w-full object-cover"
-                  style={{ maxHeight: '286px' }}
+                  className="h-auto w-full object-cover"
                   sizes="(max-width: 600px) 100vw, 510px"
                 />
               </div>
@@ -162,13 +161,12 @@ export default function FeedPostCard({ post }: FeedPostCardProps) {
               >
                 <BookmarkIcon className="h-[18px] w-[18px]" />
               </button>
-              <button
-                type="button"
+              <ShareButton
+                title={post?.title || ''}
+                url={postUrl}
+                slug={post?.slug}
                 className="rounded-full p-2 hover:bg-sky-500/10 hover:text-sky-500"
-                aria-label="Compartir"
-              >
-                <ArrowUpTrayIcon className="h-[18px] w-[18px]" />
-              </button>
+              />
             </div>
           </div>
 

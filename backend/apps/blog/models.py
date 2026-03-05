@@ -172,8 +172,17 @@ class PostShare(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='post_share',null=True,blank=True)
     plataform=models.CharField(
         max_length=50,
-        choices=(("facebook","Facebook"),("twitter","Twitter"),("linkedin","Linkedin"),("whatsapp","Whatsapp"),("telegram","Telegram")),
-        blank=True,null=True)
+        choices=(
+            ("facebook", "Facebook"),
+            ("twitter", "Twitter"),
+            ("linkedin", "LinkedIn"),
+            ("whatsapp", "WhatsApp"),
+            ("telegram", "Telegram"),
+            ("other", "Other"),
+        ),
+        blank=True,
+        null=True,
+    )
     timestapm=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -230,7 +239,7 @@ class PostInteraccion(models.Model):
 
     def save(self,*args,**kwargs):
         if self.interaction_type in 'view':
-            self.interaction_category = 'pasive'
+            self.interaction_category = 'passive'
         else:
             self.interaction_category = 'active'
         

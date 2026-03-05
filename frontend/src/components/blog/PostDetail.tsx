@@ -80,7 +80,7 @@ export default function PostDetail({ post }: Props) {
             alt={post.title}
             width={800}
             height={450}
-            className="w-full object-cover"
+            className="h-auto w-full object-cover"
             priority
           />
         </div>
@@ -155,6 +155,7 @@ export default function PostDetail({ post }: Props) {
           <ShareButton
             title={post.title}
             url={`/blog/post/${post.slug}`}
+            slug={post.slug}
             className="dark:text-dark-txt-secondary text-gray-500 hover:bg-sky-500/10 hover:text-sky-500"
           />
 

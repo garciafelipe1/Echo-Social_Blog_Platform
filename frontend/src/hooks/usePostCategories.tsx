@@ -12,14 +12,14 @@ export default function usePostCategories() {
       setLoading(true);
       const res = await fetchAllCategories();
 
-      // Asumiendo que 'res' ya son los datos procesados
       if (res && Array.isArray(res.results)) {
         setCategories(res.results);
       } else if (res && Array.isArray(res)) {
-        setCategories(res); // Si la lista de categorías es el resultado directo
+        setCategories(res);
+      } else if (res && typeof res === 'object' && !Array.isArray(res)) {
+        setCategories([]);
       } else {
-        ToastError('Error: Invalid data format received for categories');
-        console.error('Invalid categories data:', res);
+        setCategories([]);
       }
     } catch (error) {
       ToastError('Error loading categories');
