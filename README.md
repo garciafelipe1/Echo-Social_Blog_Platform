@@ -1,4 +1,4 @@
-# Echo — Red Social y Blog Full-Stack
+# EF — Red Social y Blog Full-Stack
 
 [![Django](https://img.shields.io/badge/Django-4.2-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
