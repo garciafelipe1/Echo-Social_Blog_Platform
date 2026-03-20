@@ -35,7 +35,11 @@ export default async function verifyOTPLogin(props: SendVerifyOTPLoginProps) {
     }
     const d = data as { error?: string; message?: string; detail?: string; results?: string };
     const errMsg =
-      d?.error || d?.message || (typeof d?.results === 'string' ? d.results : null) || d?.detail || 'Código OTP inválido o expirado. Solicita uno nuevo.';
+      d?.error ||
+      d?.message ||
+      (typeof d?.results === 'string' ? d.results : null) ||
+      d?.detail ||
+      'Código OTP inválido o expirado. Solicita uno nuevo.';
     ToastError(errMsg);
   } catch (err) {
     ToastError('Error al verificar el código. Inténtalo de nuevo.');

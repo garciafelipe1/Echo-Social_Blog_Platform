@@ -103,7 +103,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     if (!contentType.includes('application/json')) {
       console.error('Django devolvió HTML en vez de JSON:', text.slice(0, 200));
       return res.status(502).json({
-        error: 'El backend devolvió una respuesta inesperada. ¿Está corriendo en ' + process.env.API_URL + '?',
+        error:
+          'El backend devolvió una respuesta inesperada. ¿Está corriendo en ' +
+          process.env.API_URL +
+          '?',
       });
     }
 

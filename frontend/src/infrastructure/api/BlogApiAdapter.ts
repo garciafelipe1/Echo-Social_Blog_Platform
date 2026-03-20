@@ -16,18 +16,18 @@ export class BlogApiAdapter implements IBlogApiPort {
       const data = (await res.json()) as PostListResult;
       if (res.ok) return data;
       // 404, 400, etc.: devolver lista vacía para mensaje amigable
-      return { results: [], count: 0, next: null } as PostListResult;
+      return { results: [], count: 0, next: null, previous: null };
     } catch {
-      return { results: [], count: 0, next: null } as PostListResult;
+      return { results: [], count: 0, next: null, previous: null };
     }
   }
 
   async fetchPostBySlug(slug: string): Promise<unknown | null> {
     try {
-      const res = await fetchWithRetry(
-        `/api/blog/post/get/?slug=${encodeURIComponent(slug)}`,
-        { maxRetries: 2, retryOn: (r) => r.status >= 500 }
-      );
+      const res = await fetchWithRetry(`/api/blog/post/get/?slug=${encodeURIComponent(slug)}`, {
+        maxRetries: 2,
+        retryOn: (r) => r.status >= 500,
+      });
       const data = await res.json();
       if (res.ok) return data;
     } catch {

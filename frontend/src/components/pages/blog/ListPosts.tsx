@@ -29,9 +29,7 @@ export default function ListPosts({
         <ListPostCardLoading />
       ) : !posts?.length ? (
         <div className="dark:border-dark-third dark:bg-dark-bg rounded-2xl border border-gray-200 bg-white py-12 text-center">
-          <p className="dark:text-dark-txt-secondary text-gray-500">
-            Aún no hay publicaciones.
-          </p>
+          <p className="dark:text-dark-txt-secondary text-gray-500">Aún no hay publicaciones.</p>
           <p className="dark:text-dark-txt-secondary mt-1 text-sm text-gray-400">
             Cuando publiques algo, aparecerá aquí.
           </p>

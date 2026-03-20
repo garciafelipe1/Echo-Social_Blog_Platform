@@ -12,7 +12,8 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'prettier'),
+  ...compat.extends('eslint-config-next/core-web-vitals', 'eslint-config-next/typescript'),
+  ...compat.extends('prettier'),
   {
     languageOptions: {
       parser,
@@ -28,8 +29,15 @@ const eslintConfig = [
       'react/jsx-props-no-spreading': 'off',
       'import/no-extraneous-dependencies': 'off',
       'react/no-danger': 'off',
-    
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      'prefer-const': 'warn',
     },
+  },
+  {
+    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
   },
 ];
 

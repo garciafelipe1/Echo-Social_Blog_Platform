@@ -17,12 +17,11 @@ export interface FetchWithRetryOptions extends RequestInit {
 
 export async function fetchWithRetry(
   url: string,
-  options: FetchWithRetryOptions = {}
+  options: FetchWithRetryOptions = {},
 ): Promise<Response> {
   const { maxRetries = DEFAULT_MAX_RETRIES, retryOn, ...fetchOptions } = options;
 
-  const shouldRetry = (res: Response) =>
-    retryOn ? retryOn(res) : res.status >= 500;
+  const shouldRetry = (res: Response) => (retryOn ? retryOn(res) : res.status >= 500);
 
   let lastError: Error | null = null;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {

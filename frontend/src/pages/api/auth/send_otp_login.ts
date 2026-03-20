@@ -19,14 +19,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   try {
-    const apiRes = await fetch(`${process.env.API_URL.replace(/\/$/, '')}/api/authentication/send_otp_login/`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    const apiRes = await fetch(
+      `${process.env.API_URL.replace(/\/$/, '')}/api/authentication/send_otp_login/`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req.body),
       },
-      body: JSON.stringify(req.body),
-    });
+    );
 
     const data = await apiRes.json();
     return res.status(apiRes.status).json(data);
