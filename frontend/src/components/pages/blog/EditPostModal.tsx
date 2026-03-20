@@ -204,7 +204,7 @@ export default function EditPostModal({ open, setOpen, slug }: ComponentProps) {
                 type="button"
                 onClick={handleOnSubmit}
                 disabled={loading}
-                className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-900 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-900 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-violet-600"
               >
                 {loading ? <LoadingMoon /> : 'Guardar Cambios'}
               </button>

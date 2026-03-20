@@ -85,9 +85,10 @@ class PostSerializer(serializers.ModelSerializer):
         fields= "__all__"
     
     def get_view_count(self, obj):
+        """Solo vistas únicas (abrir detalle), no impresiones en listado."""
         try:
             analytics = obj.post_analytics
-            return analytics.impressions + analytics.views
+            return analytics.views
         except Exception:
             return 0
     
@@ -144,9 +145,10 @@ class PostListSerializer(serializers.ModelSerializer):
         ]
 
     def get_view_count(self, obj):
+        """Solo vistas únicas (abrir detalle), no impresiones en listado."""
         try:
             analytics = obj.post_analytics
-            return analytics.impressions + analytics.views
+            return analytics.views
         except PostAnalytics.DoesNotExist:
             return 0
 

@@ -37,7 +37,7 @@ export const register = (props: IRegisterProps) => async (dispatch: Dispatch) =>
       re_password: props.re_password,
     });
 
-    const res = await fetch('api/auth/register', {
+    const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -51,7 +51,8 @@ export const register = (props: IRegisterProps) => async (dispatch: Dispatch) =>
       dispatch({
         type: SIGNUP_SUCCESS,
       });
-      ToastSuccess('we have sent you an email, please click the link to verify your account');
+      ToastSuccess('Te hemos enviado un correo. Haz clic en el enlace para verificar tu cuenta.');
+      return true;
     } else {
       dispatch({
         type: SIGNUP_FAIL,
@@ -61,7 +62,7 @@ export const register = (props: IRegisterProps) => async (dispatch: Dispatch) =>
       } else if (data.username && data.username.length > 0) {
         ToastError(data.username[0]);
       } else {
-        ToastError('An unknown error occured');
+        ToastError(data?.error || data?.detail || 'Ha ocurrido un error. Inténtalo de nuevo.');
       }
     }
   } catch (err) {
@@ -91,17 +92,20 @@ export const activate = (props: IActivationsProps) => async (dispatch: Dispatch)
       dispatch({
         type: ACTIVATION_SUCCESS,
       });
-      ToastSuccess('Your account has been activated, you may now login.');
+      ToastSuccess('Tu cuenta ha sido activada. Ya puedes iniciar sesión.');
+      return true;
     } else {
       dispatch({
         type: ACTIVATION_FAIL,
       });
-      ToastError('There was an error activating your account.');
+      ToastError('Error al activar tu cuenta. El enlace puede haber expirado.');
+      return false;
     }
   } catch (err) {
     dispatch({
       type: ACTIVATION_FAIL,
     });
+    return false;
   }
 };
 
@@ -121,11 +125,13 @@ export const resend_activation = (props: IResendActivationProps) => async () => 
     });
 
     if (res.status === 204) {
-      ToastSuccess('we have send you email ');
+      ToastSuccess('Te hemos enviado un nuevo correo de activación.');
     } else {
-      ToastError('There an error resending the activation email');
+      ToastError('Error al reenviar el correo. Verifica tu email.');
     }
-  } catch (err) {}
+  } catch (err) {
+    ToastError('Error de conexión. Inténtalo de nuevo.');
+  }
 };
 export const forgot_password = (props: IForgotPasswordProps) => async () => {
   try {
@@ -143,11 +149,13 @@ export const forgot_password = (props: IForgotPasswordProps) => async () => {
     });
 
     if (res.status === 204) {
-      ToastSuccess('we have send you email to reset your password');
+      ToastSuccess('Te hemos enviado un correo con el enlace para restablecer tu contraseña.');
     } else {
-      ToastError('There an error resending the activation email');
+      ToastError('Error al enviar el correo. Verifica tu email.');
     }
-  } catch (err) {}
+  } catch (err) {
+    ToastError('Error de conexión. Inténtalo de nuevo.');
+  }
 };
 export const forgot_password_confirm =
   (props: IForgotPasswordConfirmProps) => async (dispatch: Dispatch) => {
@@ -169,12 +177,15 @@ export const forgot_password_confirm =
       });
 
       if (res.status === 204) {
-        ToastSuccess('Your password has been reset, you may now login.');
+        ToastSuccess('Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.');
+        return true;
       } else {
-        ToastError('There was an error resending the activation email.');
+        ToastError('Error al restablecer la contraseña. El enlace puede haber expirado.');
+        return false;
       }
     } catch (err) {
-      ToastError('Unexpected error');
+      ToastError('Error inesperado. Inténtalo de nuevo.');
+      return false;
     }
   };
 
@@ -194,15 +205,16 @@ export const loadUser = () => async (dispatch: Dispatch) => {
         payload: data,
       });
     } else {
-      dispatch({
-        type: LOAD_USER_FAIL,
-      });
-      ToastError('Error loading user information.');
+      dispatch({ type: LOAD_USER_FAIL });
+      if (res.status === 401) {
+        await fetch('/api/auth/logout').catch(() => {});
+        dispatch({ type: LOGOUT });
+      } else {
+        ToastError('Error al cargar la información del usuario.');
+      }
     }
   } catch (err) {
-    dispatch({
-      type: LOAD_USER_FAIL,
-    });
+    dispatch({ type: LOAD_USER_FAIL });
   }
 };
 
@@ -217,15 +229,13 @@ export const loadProfile = () => async (dispatch: Dispatch) => {
         payload: data.results,
       });
     } else {
-      dispatch({
-        type: LOAD_PROFILE_FAIL,
-      });
-      ToastError('Error loading user profile.');
+      dispatch({ type: LOAD_PROFILE_FAIL });
+      if (res.status !== 401) {
+        ToastError('Error al cargar el perfil.');
+      }
     }
   } catch (err) {
-    dispatch({
-      type: LOAD_PROFILE_FAIL,
-    });
+    dispatch({ type: LOAD_PROFILE_FAIL });
   }
 };
 
@@ -256,7 +266,7 @@ export const login =
         dispatch({
           type: LOGIN_FAIL,
         });
-        ToastError('Login failed please verify your email and password');
+        ToastError('Email o contraseña incorrectos. Verifica tus datos.');
       }
     } catch (err) {
       dispatch({

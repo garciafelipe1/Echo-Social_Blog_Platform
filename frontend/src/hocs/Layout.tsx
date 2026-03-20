@@ -41,9 +41,7 @@ export default function Layout({ children }: pageProps) {
     <div className="dark:bg-dark-main dark:text-dark-txt min-h-screen bg-white text-gray-900">
       <Navbar onSearchClick={handleSearchClick} />
       <div className="pb-16 md:pb-0">{children}</div>
-      <div className="hidden md:block">
-        <Footer />
-      </div>
+      <Footer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );

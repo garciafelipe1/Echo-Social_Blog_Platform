@@ -18,28 +18,18 @@ export default function DarkModeButton() {
 
     if (currentTheme === 'dark') {
       return (
-        <button
-          type="button"
-          onClick={() => {
-            setTheme('light');
-          }}
-        >
+        <button type="button" onClick={() => setTheme('light')} aria-label="Cambiar a modo claro">
           <SunIcon
             className="h-6 w-auto text-yellow-600 hover:text-yellow-700"
-            aria-hidden="false"
+            aria-hidden="true"
           />
         </button>
       );
     }
 
     return (
-      <button
-        type="button"
-        onClick={() => {
-          setTheme('dark');
-        }}
-      >
-        <MoonIcon className="h-6 w-auto text-blue-800 hover:text-blue-900" aria-hidden="false" />
+      <button type="button" onClick={() => setTheme('dark')} aria-label="Cambiar a modo oscuro">
+        <MoonIcon className="h-6 w-auto text-blue-800 hover:text-blue-900" aria-hidden="true" />
       </button>
     );
   };

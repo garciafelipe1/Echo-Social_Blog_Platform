@@ -21,7 +21,7 @@ export default function ProfileUserForm({
     <dl className="dark:divide-dark-third dark:border-dark-third mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm/6">
       <div className="pt-6 sm:flex">
         <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-          Username
+          Nombre de usuario
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
           <EditText data={username} setData={setUsername} />
@@ -29,7 +29,7 @@ export default function ProfileUserForm({
       </div>
       <div className="pt-6 sm:flex">
         <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-          First Name
+          Nombre
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
           <EditText data={firstName} setData={setFirstName} />
@@ -37,7 +37,7 @@ export default function ProfileUserForm({
       </div>
       <div className="pt-6 sm:flex">
         <dt className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-          Last Name
+          Apellido
         </dt>
         <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
           <EditText data={lastName} setData={setLastName} />

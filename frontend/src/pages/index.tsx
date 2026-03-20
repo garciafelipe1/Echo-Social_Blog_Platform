@@ -12,12 +12,17 @@ import {
 import InfiniteScroll from '@/components/shared/InfiniteScroll';
 import usePosts from '@/hooks/usePosts';
 import useCategories from '@/hooks/useCategories';
+import BlogDemoTools from '@/components/pages/blog/BlogDemoTools';
 import Link from 'next/link';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/redux/reducers';
 import { ReactElement, useCallback, useState } from 'react';
 
 const SKELETON_COUNT = 5;
 
 export default function Home() {
+  const user = useSelector((s: RootState) => s.auth.user);
+  const isAdmin = user?.role === 'admin';
   const [activeTab, setActiveTab] = useState<'for_you' | 'following'>('for_you');
 
   const {
@@ -90,6 +95,16 @@ export default function Home() {
                     ? 'No hay publicaciones de personas que sigues.'
                     : 'Aun no hay publicaciones en tu feed.'}
                 </p>
+                {isAdmin && (
+                  <div className="mt-6 w-full max-w-md">
+                    <BlogDemoTools
+                      onRefetchAfterGenerate={() => {
+                        refetchForYou();
+                        refetchFollowing();
+                      }}
+                    />
+                  </div>
+                )}
                 <Link
                   href="/blog"
                   className="mt-4 text-[15px] font-semibold text-violet-600 hover:underline"

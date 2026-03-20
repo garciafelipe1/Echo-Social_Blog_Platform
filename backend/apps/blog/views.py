@@ -1,4 +1,5 @@
 from rest_framework_api.views import StandardAPIView, APIView
+from core.throttling import CreatePostRateThrottle
 from rest_framework.exceptions import NotFound, APIException, ValidationError
 from django.conf import settings
 from django.core.cache import cache
@@ -140,7 +141,7 @@ class CategoriesListView(StandardAPIView):
 
 
 class DetailPostView(StandardAPIView):
-    """Get a single post by slug. Use case: GetPostBySlugUseCase."""
+    """Get a single post by slug. Use case: GetPostBySlugUseCase. Registra vista única (1 por usuario/post)."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -149,11 +150,30 @@ class DetailPostView(StandardAPIView):
             post = get_post_by_slug_use_case.execute(slug)
         except (ValueError, PostNotFoundError) as e:
             raise NotFound(detail=str(e))
+        # Registrar vista única: 1 por usuario (o IP si anónimo), sin incrementar en recargas
+        ip_address = get_client_ip(request)
+        user = request.user if request.user.is_authenticated else None
+        self._register_view_once(post, ip_address, user)
         serialized_post = PostSerializer(post, context={"request": request}).data
         return self.response(serialized_post)
+
+    def _register_view_once(self, post, ip_address, user):
+        """Solo cuenta 1 vista por usuario/post (o por IP si anónimo). Recargas no incrementan."""
+        if user:
+            exists = PostView.objects.filter(post=post, user=user).exists()
+        else:
+            exists = PostView.objects.filter(post=post, ip_address=ip_address, user__isnull=True).exists()
+        if not exists:
+            PostView.objects.create(post=post, ip_address=ip_address, user=user)
+            # El signal post_save de PostView ya incrementa analytics.views
 class PostAuthorViews(StandardAPIView):
     """CRUD for posts by the authenticated author. Use cases: List/Create/Update/Delete."""
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            return [CreatePostRateThrottle()]
+        return super().get_throttles()
 
     def get(self, request):
         try:
@@ -213,6 +233,10 @@ class PostAuthorViews(StandardAPIView):
             return self.error(str(e), status=400)
         except PostValidationError as e:
             return self.error(str(e), status=400)
+        except Exception as e:
+            return self.error(f"Error al crear el post: {str(e)}", status=400)
+        self._invalidate_author_posts_cache(request.user.username)
+        self._invalidate_post_list_cache()
         return self.response(f"Post '{post.title}' created successfully", status=status.HTTP_201_CREATED)
     
     
@@ -228,8 +252,18 @@ class PostAuthorViews(StandardAPIView):
             raise NotFound(detail=f"Post {post_slug} does not exist.")
         self._invalidate_post_list_cache()
         self._invalidate_post_detail_cache(post_slug)
+        self._invalidate_author_posts_cache(request.user.username)
         return self.response("Post deleted successfully")
     
+    def _invalidate_author_posts_cache(self, username: str):
+        """Invalida la caché de posts del autor para que aparezcan al instante."""
+        try:
+            cache_keys = cache.keys(f"author_posts:{username}:*")
+            for key in cache_keys:
+                cache.delete(key)
+        except Exception:
+            pass
+
     def _invalidate_post_list_cache(self):
         
         
@@ -255,6 +289,8 @@ class PostPagination(PageNumberPagination):
 
 class PostListView(StandardAPIView):
     """List published posts with filters. Use case: ListPostsUseCase; cache in adapter."""
+    permission_classes = [permissions.AllowAny]
+
     def get(self, request, *args, **kwargs):
         try:
             search = request.query_params.get("search", "").strip()
@@ -285,11 +321,9 @@ class PostListView(StandardAPIView):
                 ordering=ordering,
                 followed_by_user=followed_by_user,
             )
-            if author and not posts.exists():
-                return self.error(
-                    f"No se encontraron posts para el autor: {author}",
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            # Sin posts: devolver 200 con lista vacía (no 404) para mostrar mensaje amigable
+            if not posts.exists():
+                return self.paginate(request, [])
 
             serialized_posts = PostListSerializer(posts, many=True, context=serializer_ctx).data
             post_ids = [p.id for p in posts]
@@ -342,26 +376,15 @@ class PostDetailView(StandardAPIView):
         return self.response(serialized_post)
     def _register_view_interaction(self, post, ip_address, user):
         """
-        Registra la interacción de tipo 'view', maneja incrementos de vistas únicas 
-        y totales, y actualiza PostAnalytics.
+        Registra vista única: 1 por usuario/post (o por IP si anónimo). Recargas no incrementan.
         """
-        # Verifica si esta IP y usuario ya registraron una vista única
-        if not PostView.objects.filter(post=post, ip_address=ip_address, user=user).exists():
-            # Crea un registro de vista unica
+        if user:
+            exists = PostView.objects.filter(post=post, user=user).exists()
+        else:
+            exists = PostView.objects.filter(post=post, ip_address=ip_address, user__isnull=True).exists()
+        if not exists:
             PostView.objects.create(post=post, ip_address=ip_address, user=user)
-
-            try:
-                PostInteraccion.objects.create(
-                    user=user,
-                    post=post,
-                    interaction_type="view",
-                    ip_address=ip_address,
-                )
-            except Exception as e:
-                raise ValueError(f"Error creating PostInteraction: {e}")
-
-            analytics, _ = PostAnalytics.objects.get_or_create(post=post)
-            analytics.increment_metric('views')
+            # El signal post_save de PostView ya incrementa analytics.views
            
 
 class PostHeadingsView(APIView):
@@ -870,7 +893,7 @@ class AuthorPostListView(StandardAPIView):
 
             posts = list_posts_by_author_use_case.execute(request.user).order_by("-created_at")
             if not posts.exists():
-                return self.response([], status=status.HTTP_200_OK)
+                return self.paginate(request, [])
 
             serialized_posts = PostListSerializer(posts, many=True, context={"request": request}).data
             cache.set(cache_key, serialized_posts, timeout=60 * 5)

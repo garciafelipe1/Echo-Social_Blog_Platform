@@ -41,15 +41,15 @@ export default function Sidebar() {
                 href={item.href}
                 className={classNames(
                   item.current
-                    ? 'dark:bg-dark-second dark:text-dark-accent bg-gray-50 text-indigo-600'
-                    : 'dark:text-dark-txt dark:hover:bg-dark-second dark:hover:text-dark-accent text-gray-700 hover:bg-gray-50 hover:text-indigo-600',
+                    ? 'dark:bg-dark-second dark:text-dark-accent bg-gray-50 text-violet-600'
+                    : 'dark:text-dark-txt dark:hover:bg-dark-second dark:hover:text-dark-accent text-gray-700 hover:bg-gray-50 hover:text-violet-600',
                   'group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm/6 font-semibold',
                 )}
               >
                 <item.icon
                   aria-hidden="true"
                   className={classNames(
-                    item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600',
+                    item.current ? 'text-violet-600' : 'text-gray-400 group-hover:text-violet-600',
                     'size-6 shrink-0',
                   )}
                 />

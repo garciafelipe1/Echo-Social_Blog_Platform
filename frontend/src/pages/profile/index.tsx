@@ -59,7 +59,7 @@ export default function Page() {
           </div>
           <div className="ml-4 mt-4 shrink-0">
             <Button onClick={handleSaveAll} disabled={loading || !hasAnyChanges} hoverEffect>
-              {loading ? <LoadingMoon /> : 'save changes'}
+              {loading ? <LoadingMoon /> : 'Guardar cambios'}
             </Button>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function Page() {
           />
           <li className="py-6 sm:flex">
             <h4 className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-              Biography
+              Biografía
             </h4>
             <div className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
               <EditRichText data={profileFields.biography} setData={profileFields.setBiography} />
@@ -101,7 +101,7 @@ export default function Page() {
           </li>
           <li className="py-6 sm:flex">
             <h4 className="dark:text-dark-txt font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-              Birthday
+              Fecha de nacimiento
             </h4>
             <div className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
               <EditDate

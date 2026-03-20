@@ -6,12 +6,13 @@ interface ComponentsProps {
   data: string;
   setData: (value: string) => void;
   required?: boolean;
-  disable: boolean;
+  disable?: boolean;
   maxTextLength?: number;
   showmMaxTextLength?: boolean;
   placeholder?: string;
-  title?: string; // Posible error tipográfico, podría ser "title"
+  title?: string;
   description?: string;
+  autoComplete?: string;
 }
 
 export default function EditPassword({
@@ -22,8 +23,9 @@ export default function EditPassword({
   maxTextLength = 120,
   showmMaxTextLength = false,
   placeholder = '',
-  title = '', // Posible error tipográfico, podría ser "title"
+  title = '',
   description = '',
+  autoComplete = 'off',
 }: ComponentsProps) {
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value;
@@ -37,7 +39,7 @@ export default function EditPassword({
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   return (
     <div>
-      <span className="text-grey-800 dark:text-dark-txt block text-sm font-bold">{title}</span>
+      <span className="dark:text-dark-txt block text-sm font-bold text-gray-800">{title}</span>
       <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
         {description}
       </span>
@@ -49,6 +51,7 @@ export default function EditPassword({
           placeholder={placeholder}
           value={data}
           maxLength={maxTextLength}
+          autoComplete={autoComplete}
           className={`${inputClassName}`}
           onChange={handleInputChange}
         />
@@ -79,4 +82,5 @@ EditPassword.defaultProps = {
   placeholder: '',
   title: '',
   description: '',
+  autoComplete: 'off',
 };

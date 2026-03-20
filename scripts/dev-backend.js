@@ -11,7 +11,7 @@ const python = isWin
   ? path.join(backendDir, 'venv', 'Scripts', 'python.exe')
   : path.join(backendDir, 'venv', 'bin', 'python');
 
-const proc = spawn(python, ['manage.py', 'runserver'], {
+const proc = spawn(python, ['manage.py', 'runserver', '7000'], {
   cwd: backendDir,
   stdio: 'inherit',
   shell: isWin,

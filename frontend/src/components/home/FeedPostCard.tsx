@@ -46,7 +46,7 @@ export default function FeedPostCard({ post }: FeedPostCardProps) {
     >
       <div className="flex gap-3">
         {/* Avatar */}
-        <Link href={userUrl} className="shrink-0 pt-0.5">
+        <Link href={userUrl} className="shrink-0 overflow-hidden rounded-full pt-0.5">
           {post?.user?.profile_picture ? (
             <Image
               width={40}

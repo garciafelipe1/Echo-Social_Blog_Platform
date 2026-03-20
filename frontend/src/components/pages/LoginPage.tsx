@@ -76,12 +76,12 @@ export default function Page() {
             data={email}
             setData={setEmail}
             title="Email"
-            placeholder="YourEmail@gmail.com"
+            placeholder="tu@email.com"
             required
           />
-          <EditPassword data={password} setData={setPassword} title="password" required />
+          <EditPassword data={password} setData={setPassword} title="Contraseña" required />
           <Button disabled={loading} hoverEffect={!loading} type="submit">
-            {loading ? <LoadingMoon /> : 'login'}
+            {loading ? <LoadingMoon /> : 'Iniciar sesión'}
           </Button>
         </form>
         {/* <Button disabled={loading} hoverEffect={!loading} onClick={handleRefreshToken}>
@@ -92,18 +92,18 @@ export default function Page() {
         </Button> */}
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">
-          Do you not have an account? {''}
-          <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
-            Register
+          ¿No tienes cuenta?{' '}
+          <Link href="/register" className="font-semibold text-violet-600 hover:text-violet-500">
+            Regístrate
           </Link>
         </p>
         <p className="mt-2 text-center text-sm/6 text-gray-500">
-          forgot your password? {''}
+          ¿Olvidaste tu contraseña?{' '}
           <Link
             href="/forgot-password-confirm"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
+            className="font-semibold text-violet-600 hover:text-violet-500"
           >
-            forgot password
+            Recuperar contraseña
           </Link>
         </p>
       </div>

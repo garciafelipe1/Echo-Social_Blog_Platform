@@ -28,13 +28,19 @@ export default function usePostsAuthor({ isOwner }: ComponentProps) {
 
         const res = await fetchAuthorPosts(fetchAuthorPostsData);
 
-        if (res.status === 200) {
-          setPosts(res.results);
-          setCount(res.count);
-          setNextUrl(res.next);
+        if (res?.results) {
+          setPosts(Array.isArray(res.results) ? res.results : []);
+          setCount(res.count ?? 0);
+          setNextUrl(res.next ?? '');
+        } else {
+          setPosts([]);
+          setCount(0);
+          setNextUrl('');
         }
-      } catch (err) {
-        ToastError('Error fetching author posts');
+      } catch {
+        setPosts([]);
+        setCount(0);
+        setNextUrl('');
       } finally {
         setLoading(false);
       }
@@ -67,13 +73,13 @@ export default function usePostsAuthor({ isOwner }: ComponentProps) {
         };
 
         const res = await fetchAuthorPosts(fetchAuthorPostsData);
-        if (res.status === 200) {
-          setPosts([...posts, ...res.results]);
-          setCount(res.count);
-          setNextUrl(res.next);
+        if (res?.results && Array.isArray(res.results)) {
+          setPosts((prev) => [...prev, ...res.results]);
+          setCount(res.count ?? 0);
+          setNextUrl(res.next ?? '');
         }
-      } catch (e) {
-        ToastError('Error loading more author posts');
+      } catch {
+        // No mostrar error, solo no cargar más
       } finally {
         setLoadingMore(false);
       }

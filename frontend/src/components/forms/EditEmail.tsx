@@ -37,7 +37,7 @@ export default function EditEmail({
 
   return (
     <div>
-      <span className="text-grey-800 dark:text-dark-txt block text-sm font-bold">{title}</span>
+      <span className="dark:text-dark-txt block text-sm font-bold text-gray-800">{title}</span>
       <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
         {description}
       </span>
@@ -70,6 +70,6 @@ EditEmail.defaultProps = {
   maxTextLength: 120,
   showmMaxTextLength: false,
   placeholder: '',
-  tile: '', // Posible error tipográfico, podría ser "title"
+  title: '',
   description: '',
 };

@@ -20,7 +20,7 @@ export default function DesktopNavbar({ onSearchClick }: Props) {
     <Container>
       <Header>
         {/* left side */}
-        <div className="flex-items-center space-x-4">
+        <div className="flex items-center space-x-4">
           <NavbarLink useHover={false}>
             <Image
               className="h-12 w-auto"

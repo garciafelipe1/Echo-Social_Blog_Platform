@@ -1,6 +1,7 @@
 import buildQueryString from '@/utils/BuildQueryString';
 import parseCookies from '@/utils/cookies/parseCookies';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getBackendUrl } from '@/pages/api/_lib/backendFetch';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -12,12 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const accessToken = cookies.access;
 
   if (!accessToken) {
-    return res.status(401).json({ error: 'User unauthorized to make this request' });
+    return res.status(401).json({ error: 'Debes iniciar sesión para ver tus posts.' });
   }
 
   try {
+    const baseUrl = getBackendUrl();
     const apiRes = await fetch(
-      `${process.env.API_URL}/api/blog/post/author/?${buildQueryString(req.query)}`,
+      `${baseUrl}/api/blog/post/author/list/?${buildQueryString(req.query)}`,
       {
         method: 'GET',
         headers: {

@@ -110,7 +110,11 @@ jobs:
           REDIS_HOST: localhost
           REDIS_URL: redis://localhost:6379/0
           EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
-        run: python manage.py test --verbosity=2
+        run: python -m coverage run --source=apps,core manage.py test --verbosity=2
+
+      - name: Coverage report
+        working-directory: backend
+        run: python -m coverage report -m
 
   frontend:
     name: Frontend (Next.js)
@@ -139,5 +143,28 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
+          API_URL: http://localhost:7000
+          NEXT_PUBLIC_API_URL: http://localhost:7000
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Start Next.js server
+        working-directory: frontend
+        run: npm run start &
+        env:
+          API_URL: http://localhost:7000
+          NEXT_PUBLIC_API_URL: http://localhost:7000
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000 -t 60000
+
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npx playwright test
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
           API_URL: http://localhost:7000
           NEXT_PUBLIC_API_URL: http://localhost:7000

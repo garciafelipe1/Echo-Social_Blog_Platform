@@ -46,13 +46,18 @@ export default function SearchModal({ open, onClose }: Props) {
     results.posts.length > 0 || results.users.length > 0 || results.categories.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center sm:pt-[15vh]">
-      <div className="fixed inset-0 bg-black/40" onClick={onClose} aria-hidden />
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center sm:pt-[15vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Buscar posts, usuarios y categorías"
+    >
+      <div className="fixed inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
 
       <div className="dark:bg-dark-main sm:dark:border-dark-third relative z-10 flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-w-lg sm:rounded-xl sm:border sm:border-gray-200">
         {/* Search input */}
         <div className="dark:border-dark-third flex items-center gap-3 border-b border-gray-100 px-4 py-3">
-          <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-gray-400" />
+          <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-gray-400" aria-hidden="true" />
           <input
             ref={inputRef}
             type="text"
@@ -61,8 +66,13 @@ export default function SearchModal({ open, onClose }: Props) {
             placeholder="Buscar posts, usuarios, categorias..."
             className="dark:text-dark-txt flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
           />
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <XMarkIcon className="h-5 w-5" />
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+            aria-label="Cerrar búsqueda"
+          >
+            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -98,7 +108,7 @@ export default function SearchModal({ open, onClose }: Props) {
                           <Image
                             width={28}
                             height={28}
-                            alt=""
+                            alt={`Avatar de ${u.username || 'usuario'}`}
                             src={mediaUrl(u.profile_picture)}
                             className="h-7 w-7 rounded-full object-cover"
                           />
@@ -137,7 +147,7 @@ export default function SearchModal({ open, onClose }: Props) {
                           <Image
                             width={40}
                             height={40}
-                            alt=""
+                            alt={`Miniatura: ${p.title || 'Post'}`}
                             src={mediaUrl(p.thumbnail)}
                             className="h-10 w-10 rounded-md object-cover"
                           />

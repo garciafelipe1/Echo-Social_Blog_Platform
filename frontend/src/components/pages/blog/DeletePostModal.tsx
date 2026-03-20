@@ -45,7 +45,7 @@ export default function DeletPostModal({
                 type="button"
                 disabled={loadingDelete}
                 onClick={() => handleDelete?.(post?.slug!)}
-                className="inline-flex w-full justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-900 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="inline-flex w-full justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-900 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-violet-600"
               >
                 {loadingDelete ? <LoadingMoon /> : 'Delete Post'}
               </button>

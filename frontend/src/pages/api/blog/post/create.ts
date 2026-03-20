@@ -47,8 +47,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const djangoFormData = new FormData();
     for (const key in fields) {
       const value = fields[key];
-      if (value) {
-        djangoFormData.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        const str = Array.isArray(value) ? value[0] : value;
+        if (str != null) djangoFormData.append(key, String(str));
       }
     }
 
@@ -82,7 +83,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       }
     }
 
-    const apiRes = await fetch(`${process.env.API_URL}/api/blog/post/author/`, {
+    if (!process.env.API_URL) {
+      return res.status(500).json({
+        error: 'API_URL no configurada. Revisa frontend/.env',
+      });
+    }
+
+    const apiRes = await fetch(`${process.env.API_URL.replace(/\/$/, '')}/api/blog/post/author/`, {
       method: 'POST',
       headers: {
         Authorization: `JWT ${accessToken}`,
@@ -90,8 +97,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       body: djangoFormData as any,
     });
 
-    const data = await apiRes.json();
-    return res.status(apiRes.status).json(data);
+    const contentType = apiRes.headers.get('content-type') || '';
+    const text = await apiRes.text();
+
+    if (!contentType.includes('application/json')) {
+      console.error('Django devolvió HTML en vez de JSON:', text.slice(0, 200));
+      return res.status(502).json({
+        error: 'El backend devolvió una respuesta inesperada. ¿Está corriendo en ' + process.env.API_URL + '?',
+      });
+    }
+
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(502).json({ error: 'Respuesta del backend no es JSON válido' });
+    }
+
+    return res.status(apiRes.status).json(data as Record<string, unknown>);
   } catch (error) {
     console.error('Error communicating with Django:', error);
     return res

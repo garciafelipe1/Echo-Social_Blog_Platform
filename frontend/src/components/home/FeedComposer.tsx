@@ -57,6 +57,7 @@ export default function FeedComposer({ onPostCreated }: FeedComposerProps) {
       formData.append('status', 'published');
       formData.append('slug', slug);
       formData.append('category', effectiveCategory);
+      formData.append('keywords', '');
       if (thumbnail) {
         formData.append('thumbnail', thumbnail);
       }
@@ -87,7 +88,7 @@ export default function FeedComposer({ onPostCreated }: FeedComposerProps) {
     <div className="dark:border-dark-third border-b border-gray-200 px-4 py-3">
       <div className="flex gap-3">
         {/* Avatar */}
-        <div className="shrink-0">
+        <div className="shrink-0 overflow-hidden rounded-full">
           {profile?.profile_picture ? (
             <Image
               src={mediaUrl(profile.profile_picture)}
@@ -154,6 +155,7 @@ export default function FeedComposer({ onPostCreated }: FeedComposerProps) {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 className="rounded-full p-2 text-violet-500 transition hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                aria-label="Añadir imagen"
               >
                 <PhotoIcon className="h-5 w-5" />
               </button>
@@ -169,9 +171,37 @@ export default function FeedComposer({ onPostCreated }: FeedComposerProps) {
               type="button"
               onClick={handleSubmit}
               disabled={!content.trim() || submitting || !effectiveCategory}
-              className="rounded-full bg-violet-600 px-5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full bg-violet-600 px-5 py-1.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-busy={submitting}
             >
-              {submitting ? 'Publicando...' : 'Publicar'}
+              {submitting ? (
+                <>
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Publicando...
+                </>
+              ) : (
+                'Publicar'
+              )}
             </button>
           </div>
         </div>

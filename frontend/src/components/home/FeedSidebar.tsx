@@ -32,7 +32,7 @@ export default function FeedSidebar({ posts }: FeedSidebarProps) {
                     <Image
                       width={56}
                       height={56}
-                      alt=""
+                      alt={`Miniatura del post: ${post.title || 'Post'}`}
                       src={mediaUrl(post.thumbnail)}
                       className="object-cover"
                     />

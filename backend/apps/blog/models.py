@@ -103,7 +103,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     content = RichTextField()
-    thumbnail = models.ImageField(upload_to=blog_thumbnail_directory)
+    thumbnail = models.ImageField(upload_to=blog_thumbnail_directory, blank=True, null=True)
     
     
     featured=models.BooleanField(default=False)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework_api.views import StandardAPIView
 from rest_framework import permissions
 from django.contrib.auth import get_user_model
@@ -196,30 +197,39 @@ class VerifyOTPLoginView(StandardAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        otp_code = request.data.get('otp')
+        email = request.data.get('email') or request.data.get('Email')
+        otp_code = request.data.get('otp') or request.data.get('otp_code')
 
-        if not email or not otp_code:
-            return self.error("Both email and OTP code are required.")
+        if not email or not str(email).strip():
+            return self.error("El email es requerido.", status=status.HTTP_400_BAD_REQUEST)
+        if not otp_code or not str(otp_code).strip():
+            return self.error("El código OTP es requerido.", status=status.HTTP_400_BAD_REQUEST)
 
-        # Verificar que existe un suario con ese email y que eestaa activo
+        email = str(email).strip()
+        otp_code = str(otp_code).strip()
+
         try:
-            user = User.objects.get(email=email, is_active=True)
+            user = User.objects.get(email__iexact=email, is_active=True)
         except User.DoesNotExist:
-            return self.error("User does not exist or is not active.")
-        
-        # Generar OTP
-        totp = pyotp.TOTP(user.otp_secret)
+            return self.error("Usuario no existe o no está activo.", status=status.HTTP_404_NOT_FOUND)
 
-        if totp.verify(otp_code):
-            # Generar tokens JWT
+        if not user.otp_secret:
+            return self.error(
+                "El código OTP ha expirado. Solicita uno nuevo.",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # valid_window=1: acepta código actual, anterior y siguiente (90 segundos de validez)
+        totp = pyotp.TOTP(user.otp_secret)
+        otp_padded = otp_code.zfill(6)  # preservar ceros a la izquierda (ej: 050467)
+        if totp.verify(otp_padded, valid_window=1):
             refresh = RefreshToken.for_user(user)
             return self.response({
-                "access": str(refresh.access_token), 
-                "refresh": str(refresh)
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
             })
 
-        return self.error("Error verifying OTP code.") 
+        return self.error("Código OTP inválido o expirado. Solicita uno nuevo.", status=status.HTTP_400_BAD_REQUEST) 
 
 
         
@@ -257,4 +267,8 @@ class SendOTPLoginView(StandardAPIView):
             fail_silently=False,
         )
 
-        return self.response("OTP sent successfully.")    
+        payload = {"message": "OTP enviado. Revisa tu correo."}
+        # En desarrollo: incluir OTP en la respuesta para no depender de terminal/archivos
+        if getattr(settings, "DEBUG", False):
+            payload["dev_otp"] = otp
+        return self.response(payload)    

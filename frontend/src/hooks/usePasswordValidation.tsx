@@ -121,7 +121,7 @@ export default function usePasswordValidation({
           {!hasSymbols && (
             <div className="flex py-1">
               <p className="text-sm text-rose-500 dark:text-rose-500">
-                Su contraseña debe contener al menos un carácter especial (por ejemplo ,!@#$%^&*).
+                Tu contraseña debe contener al menos un carácter especial (por ejemplo ,!@#$%^&*).
               </p>
             </div>
           )}

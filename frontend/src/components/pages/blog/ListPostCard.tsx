@@ -57,7 +57,7 @@ export default function ListPostCard({
             <Image
               width={32}
               height={32}
-              alt=""
+              alt={`Avatar de ${post.user?.username || 'autor'}`}
               src={mediaUrl(post.user.profile_picture)}
               className="h-8 w-8 rounded-full object-cover"
             />

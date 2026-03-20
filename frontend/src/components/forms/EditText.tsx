@@ -34,7 +34,7 @@ export default function EditText({
 
   return (
     <div className="w-full">
-      <span className="text-grey-800 dark:text-dark-txt block text-sm font-bold">{title}</span>
+      <span className="dark:text-dark-txt block text-sm font-bold text-gray-800">{title}</span>
       <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
         {description}
       </span>

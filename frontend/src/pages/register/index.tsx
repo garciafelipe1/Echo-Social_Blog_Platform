@@ -14,6 +14,7 @@ import { IRegisterProps } from '../../redux/actions/auth/interfaces';
 import { register } from '../../redux/actions/auth/actions';
 import LoadingMoon from '@/components/loaders/LoadingMoon';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function Page() {
   const [email, setEmail] = useState<string>('');
@@ -33,13 +34,16 @@ export default function Page() {
   });
 
   const dispatch: ThunkDispatch<any, any, UnknownAction> = useDispatch();
+  const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!canSubmit) {
-      ToastError('Ensure all fields in the form are complete and meet the requirements');
+      ToastError(
+        'Completa todos los campos y asegúrate de cumplir los requisitos de la contraseña.',
+      );
       return;
     }
 
@@ -54,7 +58,8 @@ export default function Page() {
 
     try {
       setLoading(true);
-      await dispatch(register(registerData));
+      const success = await dispatch(register(registerData));
+      if (success) router.push('/login');
     } catch (err) {
       // Error handled by Redux action
     } finally {
@@ -76,31 +81,43 @@ export default function Page() {
             showmMaxTextLength
             data={firstname}
             setData={setFirstName}
-            title="Firstname"
+            title="Nombre"
             required
           />
-          <EditText data={lastName} setData={setLastName} title="Lastname" required />
-          <EditText data={username} setData={setUsername} title="Username" required />
+          <EditText data={lastName} setData={setLastName} title="Apellido" required />
+          <EditText data={username} setData={setUsername} title="Nombre de usuario" required />
           <EditEmail
             data={email}
             setData={setEmail}
             title="Email"
-            placeholder="YourEmail@gmail.com"
+            placeholder="tu@email.com"
             required
           />
-          <EditPassword data={password} setData={setPassword} title="password" required />
-          <EditPassword data={rePassword} setData={setRePassword} title="Repassword" required />
+          <EditPassword
+            data={password}
+            setData={setPassword}
+            title="Contraseña"
+            required
+            autoComplete="new-password"
+          />
+          <EditPassword
+            data={rePassword}
+            setData={setRePassword}
+            title="Repetir contraseña"
+            required
+            autoComplete="new-password"
+          />
           {PasswordValidationText()}
           <Button disabled={loading} hoverEffect={!loading} type="submit">
-            {loading ? <LoadingMoon /> : 'Register'}
+            {loading ? <LoadingMoon /> : 'Registrarse'}
           </Button>
         </form>
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">
-          No te llevo el correo de activacion? {''}
+          ¿No te llegó el correo de activación?{' '}
           <Link
             href="/resend-activation"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
+            className="font-semibold text-violet-600 hover:text-violet-500"
           >
             Reenviar correo
           </Link>

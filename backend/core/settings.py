@@ -1,4 +1,5 @@
 import os
+import sys
 import environ
 from datetime import timedelta
 from pathlib import Path
@@ -27,7 +28,9 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
 
-SITE_ID=1
+SITE_ID = 1
+# Dominio para enlaces en emails (activación, reset password). Debe ser el frontend.
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -40,6 +43,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
+    'core.apps.CoreConfig',
     'apps.authentication',
     'apps.user_profile',
     'apps.blog'
@@ -57,8 +61,8 @@ THIRD_PARTY_APPS = [
     'djoser',
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
-    'axes'
-    
+    'axes',
+    'drf_spectacular',
 ]
 
 
@@ -124,6 +128,13 @@ DATABASES = {
         'PORT': env("DATABASE_PORT"),
     }
 }
+
+# Usar SQLite en memoria para tests (evita necesitar CREATE DATABASE en PostgreSQL)
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
 
 
 # Password validation
@@ -195,9 +206,19 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/min" if DEBUG else "30/min",
-        "user": "300/min" if DEBUG else "120/min",
+        "anon": "100/min",
+        "user": "300/min",
+        "auth": "10/min",
+        "create": "20/min",
     },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Echo API",
+    "DESCRIPTION": "Social blog platform API — posts, comments, likes, profiles, auth",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 
@@ -306,16 +327,29 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-EMAIL_BACKEND = env(
-    "EMAIL_BACKEND",
-    default="django.core.mail.backends.smtp.EmailBackend",
+# En desarrollo: file backend (emails en backend/emails/). No imprime en terminal.
+# Con Docker+Mailpit: EMAIL_BACKEND=smtp, EMAIL_HOST=mailpit → ver en http://localhost:8025
+_default_email_backend = (
+    "django.core.mail.backends.filebased.EmailBackend"
+    if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend"
 )
+EMAIL_BACKEND = env("EMAIL_BACKEND", default=_default_email_backend)
+# En DEBUG: forzar file backend si tenías console (evita OTP en terminal)
+if DEBUG and EMAIL_BACKEND and "console" in EMAIL_BACKEND.lower():
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 
 if DEBUG:
-    EMAIL_HOST = env("EMAIL_HOST", default="localhost")
-    EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
-    EMAIL_USE_TLS = False
-    EMAIL_USE_SSL = False
+    # En desarrollo: file backend guarda emails en backend/emails/ (sin terminal)
+    # Con Docker: usa EMAIL_BACKEND=smtp y EMAIL_HOST=mailpit para ver en http://localhost:8025
+    if "filebased" in EMAIL_BACKEND:
+        EMAIL_FILE_PATH = env("EMAIL_FILE_PATH", default=str(BASE_DIR / "emails"))
+        os.makedirs(EMAIL_FILE_PATH, exist_ok=True)
+    else:
+        EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+        EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
+        EMAIL_USE_TLS = False
+        EMAIL_USE_SSL = False
     DEFAULT_FROM_EMAIL = "Echo Dev <noreply@localhost>"
 else:
     EMAIL_HOST = env("EMAIL_HOST")
@@ -328,4 +362,8 @@ else:
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Tests: evitar Redis (DummyCache) para no depender de Redis en local
+if 'test' in sys.argv:
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}
 

@@ -41,20 +41,6 @@ export default function FeedLeftSidebar() {
 
   return (
     <nav className="sticky top-4 flex flex-col items-end pr-4 xl:items-start xl:pr-8">
-      {/* Logo */}
-      <Link
-        href="/"
-        className="dark:hover:bg-dark-second mb-4 rounded-full p-3 transition-colors hover:bg-gray-100"
-      >
-        <Image
-          src="/assets/img/logos/F.png"
-          width={28}
-          height={28}
-          alt="Home"
-          className="h-7 w-7"
-        />
-      </Link>
-
       {/* Nav links */}
       <ul className="space-y-1">
         {filteredItems.map((item) => (
@@ -87,19 +73,21 @@ export default function FeedLeftSidebar() {
           href={`/@/${user.username}`}
           className="dark:hover:bg-dark-second mt-auto flex items-center gap-3 rounded-full p-3 transition-colors hover:bg-gray-100 xl:mt-8"
         >
-          {profile?.profile_picture ? (
-            <Image
-              src={mediaUrl(profile.profile_picture)}
-              width={40}
-              height={40}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover"
-            />
-          ) : (
-            <span className="dark:bg-dark-third dark:text-dark-txt flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600">
-              {user.username?.charAt(0)?.toUpperCase() || '?'}
-            </span>
-          )}
+          <div className="shrink-0 overflow-hidden rounded-full">
+            {profile?.profile_picture ? (
+              <Image
+                src={mediaUrl(profile.profile_picture)}
+                width={40}
+                height={40}
+                alt="Avatar del usuario"
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <span className="dark:bg-dark-third dark:text-dark-txt flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-sm font-semibold text-gray-600">
+                {user.username?.charAt(0)?.toUpperCase() || '?'}
+              </span>
+            )}
+          </div>
           <div className="hidden min-w-0 xl:block">
             <p className="dark:text-dark-txt truncate text-sm font-semibold text-gray-900">
               {user.username}

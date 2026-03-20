@@ -1,5 +1,6 @@
 """
 Update an existing post. Only the owner can update.
+Cualquier usuario autenticado puede editar sus propios posts.
 """
 
 from typing import Any, Dict
@@ -7,7 +8,6 @@ from typing import Any, Dict
 from apps.blog.domain import (
     CategoryNotFoundError,
     PostNotFoundError,
-    PostPermissionError,
     PostValidationError,
 )
 from apps.blog.domain.ports import IPostRepository, ICategoryRepository
@@ -23,9 +23,6 @@ class UpdatePostUseCase:
         self._category_repo = category_repository
 
     def execute(self, user: Any, post_slug: str, data: Dict[str, Any]) -> Any:
-        if getattr(user, "role", None) == "customer":
-            raise PostPermissionError()
-
         post = self._post_repo.get_by_slug_and_user(post_slug, user)
         if post is None:
             raise PostNotFoundError(post_slug)

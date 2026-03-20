@@ -11,8 +11,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     });
   }
 
+  if (!process.env.API_URL) {
+    return res.status(500).json({
+      error: 'API_URL no configurada. Crea frontend/.env.local con API_URL=http://localhost:7000',
+    });
+  }
+
   try {
-    const apiRes = await fetch(`${process.env.API_URL}/auth/users/`, {
+    const apiRes = await fetch(`${process.env.API_URL.replace(/\/$/, '')}/auth/users/`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',

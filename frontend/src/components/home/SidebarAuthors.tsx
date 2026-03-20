@@ -39,19 +39,21 @@ export default function SidebarAuthors({ posts }: SidebarAuthorsProps) {
               href={`/@/${author.username}`}
               className="dark:hover:bg-dark-second flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-white"
             >
-              {author.profile_picture ? (
-                <Image
-                  width={36}
-                  height={36}
-                  alt=""
-                  src={mediaUrl(author.profile_picture)}
-                  className="h-9 w-9 rounded-full object-cover"
-                />
-              ) : (
-                <span className="dark:bg-dark-third dark:text-dark-txt flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-xs font-semibold text-gray-600">
-                  {author.username?.charAt(0)?.toUpperCase() || '?'}
-                </span>
-              )}
+              <div className="shrink-0 overflow-hidden rounded-full">
+                {author.profile_picture ? (
+                  <Image
+                    width={36}
+                    height={36}
+                    alt={`Avatar de ${author.username || 'autor'}`}
+                    src={mediaUrl(author.profile_picture)}
+                    className="h-9 w-9 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="dark:bg-dark-third dark:text-dark-txt flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-xs font-semibold text-gray-600">
+                    {author.username?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
               <div className="min-w-0">
                 <p className="dark:text-dark-txt truncate text-sm font-medium text-gray-900">
                   {author.username}

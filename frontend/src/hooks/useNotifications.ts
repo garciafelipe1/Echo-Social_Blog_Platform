@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/redux/reducers';
 
 export interface INotification {
   id: string;
@@ -16,12 +18,14 @@ export interface INotification {
 }
 
 export default function useNotifications() {
+  const isAuthenticated = useSelector((s: RootState) => s.auth.isAuthenticated);
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await fetch('/api/notifications/list');
@@ -34,9 +38,10 @@ export default function useNotifications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await fetch('/api/notifications/unread_count');
       if (res.ok) {
@@ -46,7 +51,7 @@ export default function useNotifications() {
     } catch {
       // silent
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const markAllAsRead = useCallback(async () => {
     try {
@@ -65,9 +70,14 @@ export default function useNotifications() {
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
-  }, [fetchNotifications, fetchUnreadCount]);
+    if (isAuthenticated) {
+      fetchNotifications();
+      fetchUnreadCount();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [isAuthenticated, fetchNotifications, fetchUnreadCount]);
 
   useEffect(() => {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL;

@@ -39,13 +39,19 @@ export default function usePosts({ username, showFeatured, feed, category }: Com
           ...(feed && { feed }),
           ...(category && { categories: [category] }),
         });
-        if (res) {
+        if (res?.results) {
           setPosts((res.results as IPostsList[]) || []);
           setCount(res.count ?? 0);
           setNextUrl(res.next ?? '');
+        } else {
+          setPosts([]);
+          setCount(0);
+          setNextUrl('');
         }
-      } catch (err) {
-        ToastError('error fetching posts');
+      } catch {
+        setPosts([]);
+        setCount(0);
+        setNextUrl('');
       } finally {
         setLoading(false);
       }
@@ -77,13 +83,13 @@ export default function usePosts({ username, showFeatured, feed, category }: Com
         page_size: Number(params.page_size) || pageSize,
         ...(showFeatured !== undefined && { is_featured: showFeatured }),
       });
-      if (res) {
+      if (res?.results) {
         setPosts((prev) => [...prev, ...((res.results as IPostsList[]) || [])]);
         setCount(res.count ?? 0);
         setNextUrl(res.next ?? '');
       }
-    } catch (err) {
-      ToastError('Error fetching posts');
+    } catch {
+      // No mostrar error
     } finally {
       setLoadingMore(false);
     }

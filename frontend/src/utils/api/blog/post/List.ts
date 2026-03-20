@@ -12,19 +12,19 @@ export interface FetchPostProps {
   // categories?:string
 }
 
+const EMPTY_POSTS = { results: [], count: 0, next: null };
+
 export default async function fetchPosts(props: FetchPostProps): Promise<any> {
   try {
     const res = await fetch(`/api/blog/post/list/?${buildQueryString(props)}`);
-
     const data = await res.json();
-    if (res.status === 200) {
-      return data;
+
+    if (res.ok) {
+      return { ...data, status: res.status };
     }
-    if (res.status === 404) {
-      return data;
-    }
-  } catch (e) {
-    return null;
+    // 404, 400, etc.: devolver lista vacía para mostrar mensaje amigable en vez de error
+    return { ...EMPTY_POSTS, ...data, results: data?.results ?? [], status: res.status };
+  } catch {
+    return { ...EMPTY_POSTS, status: 0 };
   }
-  return null;
 }

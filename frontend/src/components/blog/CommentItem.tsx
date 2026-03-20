@@ -43,7 +43,7 @@ export default function CommentItem({
           <Image
             width={28}
             height={28}
-            alt=""
+            alt={`Avatar de ${comment.user?.username || 'usuario'}`}
             src={mediaUrl(comment.user.profile_picture)}
             className="h-7 w-7 rounded-full object-cover"
           />

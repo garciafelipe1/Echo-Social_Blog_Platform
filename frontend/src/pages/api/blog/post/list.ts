@@ -13,7 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const cookies = parseCookies(req.headers.cookie || '');
     const accessToken = cookies.access;
     const headers: Record<string, string> = { Accept: 'application/json' };
-    if (accessToken) {
+    // Solo enviar token cuando feed=following (requiere usuario); omitir para evitar 401 con token expirado
+    const needsAuth = req.query?.feed === 'following';
+    if (needsAuth && accessToken) {
       headers['Authorization'] = `JWT ${accessToken}`;
     }
 

@@ -3,24 +3,31 @@
  */
 
 import buildQueryString from '@/utils/BuildQueryString';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import type { IBlogApiPort, FetchPostListParams, PostListResult } from '@/application/ports/blog';
 
 export class BlogApiAdapter implements IBlogApiPort {
   async fetchPostList(params: FetchPostListParams): Promise<PostListResult | null> {
     try {
-      const res = await fetch(`/api/blog/post/list/?${buildQueryString(params)}`);
-      const data = await res.json();
-      if (res.status === 200) return data as PostListResult;
-      if (res.status === 404) return data as PostListResult;
+      const res = await fetchWithRetry(`/api/blog/post/list/?${buildQueryString(params)}`, {
+        maxRetries: 2,
+        retryOn: (r) => r.status >= 500,
+      });
+      const data = (await res.json()) as PostListResult;
+      if (res.ok) return data;
+      // 404, 400, etc.: devolver lista vacía para mensaje amigable
+      return { results: [], count: 0, next: null } as PostListResult;
     } catch {
-      return null;
+      return { results: [], count: 0, next: null } as PostListResult;
     }
-    return null;
   }
 
   async fetchPostBySlug(slug: string): Promise<unknown | null> {
     try {
-      const res = await fetch(`/api/blog/post/get/?slug=${encodeURIComponent(slug)}`);
+      const res = await fetchWithRetry(
+        `/api/blog/post/get/?slug=${encodeURIComponent(slug)}`,
+        { maxRetries: 2, retryOn: (r) => r.status >= 500 }
+      );
       const data = await res.json();
       if (res.ok) return data;
     } catch {

@@ -1,6 +1,7 @@
 import Button from '@/components/Button';
 import Layout from '@/hocs/Layout';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { UnknownAction } from 'redux';
 import { useDispatch } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -20,6 +21,7 @@ function getParamsFromUrl(): { uid: string; token: string } {
 export default function Page() {
   const [params, setParams] = useState({ uid: '', token: '' });
   const dispatch: ThunkDispatch<any, any, UnknownAction> = useDispatch();
+  const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const autoTriggered = useRef(false);
 
@@ -31,19 +33,20 @@ export default function Page() {
   const doActivate = useCallback(
     async (uid: string, token: string) => {
       if (!token?.trim() || !uid?.trim()) {
-        ToastError('Token and UID must be provided');
+        ToastError('Faltan el token o el UID. Usa el enlace del correo.');
         return;
       }
       try {
         setLoading(true);
-        await dispatch(activate({ uid: uid.trim(), token: token.trim() }));
+        const success = await dispatch(activate({ uid: uid.trim(), token: token.trim() }));
+        if (success) router.push('/login');
       } catch (err) {
         ToastError(`${err}`);
       } finally {
         setLoading(false);
       }
     },
-    [dispatch],
+    [dispatch, router],
   );
 
   // Auto-activar al cargar cuando la URL ya tiene uid y token (enlace del correo)
@@ -63,7 +66,7 @@ export default function Page() {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 pt-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+        <h2 className="dark:text-dark-txt mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           Activa tu cuenta
         </h2>
       </div>
@@ -71,7 +74,7 @@ export default function Page() {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form onSubmit={handleOnSubmit} className="space-y-2">
           <Button disabled={loading} hoverEffect={!loading} type="submit">
-            {loading ? <LoadingMoon /> : 'Activate'}
+            {loading ? <LoadingMoon /> : 'Activar cuenta'}
           </Button>
         </form>
       </div>

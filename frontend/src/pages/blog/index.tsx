@@ -16,7 +16,8 @@ import useCategories from '@/hooks/useCategories';
 import usePosts from '@/hooks/usePosts';
 
 export default function BlogPage() {
-  const isAuthenticated = useSelector((s: RootState) => s.auth.isAuthenticated);
+  const user = useSelector((s: RootState) => s.auth.user);
+  const isAdmin = user?.role === 'admin';
 
   const [activeCategory, setActiveCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,8 +63,6 @@ export default function BlogPage() {
     refetchFeatured();
   }, [refetch, refetchFeatured]);
 
-  const showDevTools = isAuthenticated && process.env.NODE_ENV === 'development';
-
   return (
     <>
       <Head>
@@ -84,8 +83,8 @@ export default function BlogPage() {
         />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          {/* Dev tools (solo en dev + autenticado) */}
-          {showDevTools && (
+          {/* Herramientas de desarrollo: solo admin */}
+          {isAdmin && (
             <div className="mb-6">
               <BlogDemoTools onRefetchAfterGenerate={refetchAll} />
             </div>

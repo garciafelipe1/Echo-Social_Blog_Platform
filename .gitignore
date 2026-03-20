@@ -2,3 +2,6 @@
 .env
 .env.local
 .env.*.local
+
+# Emails de desarrollo (file backend)
+backend/emails/

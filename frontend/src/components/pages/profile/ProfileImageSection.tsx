@@ -29,7 +29,7 @@ export default function ProfileImageSection({
           data={profilePicture}
           setData={setProfilePicture}
           percentage={profilePicturePercentage}
-          title="Profile Picture"
+          title="Foto de perfil"
         />
       </li>
       <li className="py-6">
@@ -39,7 +39,7 @@ export default function ProfileImageSection({
           setData={setBannerPicture}
           percentage={bannerPicturePercentage}
           variant="banner"
-          title="Banner Picture"
+          title="Imagen de portada"
         />
       </li>
     </>

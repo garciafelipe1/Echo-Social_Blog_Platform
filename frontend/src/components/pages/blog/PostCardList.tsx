@@ -33,7 +33,7 @@ export default function PostCardList({ post }: ComponentProps) {
           <Link
             href={`/blog/post/${post?.slug}`}
             aria-describedby="featured-post"
-            className="text-sm/6 font-semibold text-indigo-600"
+            className="text-sm/6 font-semibold text-violet-600"
           >
             Continue reading <span aria-hidden="true">&rarr;</span>
           </Link>

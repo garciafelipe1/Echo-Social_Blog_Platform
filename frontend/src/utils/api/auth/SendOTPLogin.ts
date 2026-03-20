@@ -25,15 +25,14 @@ export default async function sendOTPLogin(props: SendOTPLoginProps) {
     const data = await res.json();
 
     if (res.status === 200) {
-      return data;
+      return { ok: true, data };
     } else {
-      console.error(`Error: Código de estado ${res.status}`);
-      ToastError('Error al enviar el correo.');
-      return null;
+      const errMsg = (data as { error?: string })?.error || 'Error al enviar el correo.';
+      ToastError(errMsg);
+      return { ok: false, error: errMsg };
     }
   } catch (err) {
-    console.error('Error en la solicitud fetch:', err);
     ToastError('Error al enviar el correo.');
-    return null;
+    return { ok: false, error: 'Error de conexión' };
   }
 }

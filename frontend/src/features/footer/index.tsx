@@ -112,8 +112,30 @@ function FooterLinkGroup({
 export default function Footer() {
   return (
     <footer>
-      <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-20 lg:px-8">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+      <div className="mx-auto max-w-7xl px-6 pb-8 pt-8 sm:pt-20 md:pt-16 lg:px-8">
+        {/* Versión compacta móvil */}
+        <div className="space-y-4 md:hidden">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+            {navigation.plataforma.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="dark:hover:text-dark-txt text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400"
+              >
+                {item.name}
+              </a>
+            ))}
+          </div>
+          <div className="dark:border-dark-third flex items-center justify-center gap-4 border-t border-gray-200 pt-4">
+            <DarkModeButton />
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              &copy; {new Date().getFullYear()} Echo
+            </p>
+          </div>
+        </div>
+
+        {/* Versión completa desktop */}
+        <div className="hidden md:block xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2">
             <FooterLinkGroup title="Plataforma" items={navigation.plataforma} />
             <FooterLinkGroup title="Soporte" items={navigation.soporte} />
@@ -127,7 +149,10 @@ export default function Footer() {
             <p className="mt-2 text-sm/6 text-gray-600 dark:text-gray-400">
               Las últimas novedades y publicaciones, directo a tu correo.
             </p>
-            <form className="mt-4 sm:flex sm:max-w-md">
+            <form className="mt-4 sm:flex sm:max-w-md" aria-label="Suscribirse al newsletter">
+              <label htmlFor="email-address" className="sr-only">
+                Email para newsletter
+              </label>
               <input
                 id="email-address"
                 name="email-address"
@@ -148,7 +173,7 @@ export default function Footer() {
             </form>
           </div>
         </div>
-        <div className="dark:border-dark-third mt-12 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
+        <div className="dark:border-dark-third mt-12 hidden border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
           <div className="flex gap-x-6 md:order-2">
             <DarkModeButton />
             {navigation.social.map((item) => (

@@ -1,10 +1,11 @@
 """
 Create a new post. Validates required fields and slug uniqueness.
+Cualquier usuario autenticado puede crear posts.
 """
 
 from typing import Any, Dict
 
-from apps.blog.domain import CategoryNotFoundError, PostPermissionError, PostValidationError
+from apps.blog.domain import CategoryNotFoundError, PostValidationError
 from apps.blog.domain.ports import IPostRepository, ICategoryRepository
 
 
@@ -18,9 +19,6 @@ class CreatePostUseCase:
         self._category_repo = category_repository
 
     def execute(self, user: Any, data: Dict[str, Any]) -> Any:
-        if getattr(user, "role", None) == "customer":
-            raise PostPermissionError()
-
         required = ["title", "content", "slug", "category"]
         missing = [f for f in required if not data.get(f)]
         if missing:
