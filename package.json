@@ -2,7 +2,7 @@
   "name": "fullstack-django-nextjs",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n back,front -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "concurrently -n back,front -c blue,green \"npm run dev:backend\" \"npx wait-on http://127.0.0.1:7000/api/health/ -t 30000 && npm run dev:frontend\"",
     "dev:backend": "node scripts/dev-backend.js",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:front": "npm run dev --prefix frontend",

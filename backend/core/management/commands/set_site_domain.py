@@ -29,7 +29,7 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get(id=settings.SITE_ID)
             site.domain = domain
-            site.name = domain
+            site.name = getattr(settings, "SITE_NAME", "EF")
             site.save()
             self.stdout.write(
                 self.style.SUCCESS(f"Site actualizado: dominio = {domain}")

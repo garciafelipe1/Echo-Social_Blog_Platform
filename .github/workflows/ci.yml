@@ -150,21 +150,10 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
-      - name: Start Next.js server
-        working-directory: frontend
-        run: npm run start &
-        env:
-          API_URL: http://localhost:7000
-          NEXT_PUBLIC_API_URL: http://localhost:7000
-
-      - name: Wait for server
-        run: npx wait-on http://localhost:3000 -t 60000
-
       - name: Run E2E tests
         working-directory: frontend
         run: npx playwright test
         env:
           CI: true
-          PLAYWRIGHT_BASE_URL: http://localhost:3000
           API_URL: http://localhost:7000
           NEXT_PUBLIC_API_URL: http://localhost:7000

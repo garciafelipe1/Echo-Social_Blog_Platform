@@ -258,17 +258,24 @@ class SendOTPLoginView(StandardAPIView):
         totp = pyotp.TOTP(secret)
         otp = totp.now()
 
-        send_mail(
-            subject='Tu código de acceso — Echo',
-            message=f'Tu código OTP es: {otp}',
-            from_email=None,
-            recipient_list=[email],
-            html_message=render_otp_email(otp, user.get_username()),
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject='Tu código de acceso — EF',
+                message=f'Tu código OTP es: {otp}',
+                from_email=None,
+                recipient_list=[email],
+                html_message=render_otp_email(otp, user.get_username()),
+                fail_silently=False,
+            )
+        except Exception as e:
+            return self.error(
+                f"Error al enviar el email: {str(e)}. Revisa RESEND_API_KEY y la configuración de email.",
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
 
         payload = {"message": "OTP enviado. Revisa tu correo."}
-        # En desarrollo: incluir OTP en la respuesta para no depender de terminal/archivos
-        if getattr(settings, "DEBUG", False):
+        # Solo incluir dev_otp cuando NO usamos Resend (ej. file backend, Mailpit)
+        # Con Resend activo, el usuario debe revisar el email para probar el flujo real
+        if getattr(settings, "DEBUG", False) and not getattr(settings, "USE_RESEND", False):
             payload["dev_otp"] = otp
         return self.response(payload)    

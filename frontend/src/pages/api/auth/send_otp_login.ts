@@ -31,11 +31,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       },
     );
 
-    const data = await apiRes.json();
+    let data: Record<string, unknown>;
+    const contentType = apiRes.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      data = await apiRes.json();
+    } else {
+      const text = await apiRes.text();
+      return res.status(apiRes.status).json({
+        error: apiRes.ok
+          ? 'Respuesta inesperada del backend'
+          : `Error ${apiRes.status}: ${text.slice(0, 200)}`,
+      });
+    }
     return res.status(apiRes.status).json(data);
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error de conexión';
     return res.status(500).json({
-      error: 'Something went wrong',
+      error: `No se pudo conectar con el backend. ¿Está corriendo en ${process.env.API_URL}? ${message}`,
     });
   }
 }

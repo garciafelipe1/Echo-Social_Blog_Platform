@@ -30,7 +30,7 @@ export default function AuthLinks() {
       <Menu as="div" className="relative inline-block text-left">
         <MenuButton>
           <Image
-            className="h-10 w-auto"
+            className="h-10 w-10 rounded-full object-cover"
             src={profilePictureUrl} // Añade un valor por defecto
             width={512}
             height={512}

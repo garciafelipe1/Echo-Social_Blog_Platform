@@ -274,6 +274,10 @@ Backend: **http://localhost:8000** | Frontend: **http://localhost:3000**
 | `FRONTEND_URL` | URL del frontend (emails) | `http://localhost:3000` |
 | `API_URL` | URL del backend (Next.js) | `http://localhost:7000` |
 | `NEXT_PUBLIC_API_URL` | URL del backend (cliente) | `http://localhost:7000` |
+| `RESEND_API_KEY` | API key de Resend (emails reales) | `re_xxxx...` |
+| `RESEND_FROM_EMAIL` | Remitente (dominio verificado en Resend) | `Echo <noreply@tudominio.com>` |
+
+**Email:** Para envío real (activación, OTP, reset password), configura [Resend](https://resend.com). Guía paso a paso: [docs/EMAIL_RESEND.md](docs/EMAIL_RESEND.md).
 
 ---
 
@@ -329,6 +333,12 @@ Backend: **http://localhost:8000** | Frontend: **http://localhost:3000**
 ---
 
 ## 📈 Despliegue y escalabilidad
+
+### Railway (frontend y backend separados)
+
+Para desplegar en Railway con dos servicios independientes, sigue [docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md).
+
+---
 
 | Decisión | Motivo |
 |----------|--------|

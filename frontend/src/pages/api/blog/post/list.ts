@@ -19,26 +19,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers['Authorization'] = `JWT ${accessToken}`;
     }
 
-    const apiRes = await fetch(`${baseUrl}/api/blog/posts/?${buildQueryString(req.query)}`, {
-      method: 'GET',
-      headers,
-    });
+    const url = `${baseUrl}/api/blog/posts/?${buildQueryString(req.query)}`;
+    const apiRes = await fetch(url, { method: 'GET', headers });
     const contentType = apiRes.headers.get('content-type');
     const data = contentType?.includes('application/json')
       ? await apiRes.json()
-      : { error: 'Backend returned non-JSON' };
+      : { error: 'Backend returned non-JSON', status: apiRes.status };
     return res.status(apiRes.status).json(data);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Something went wrong';
     if (message.includes('API_URL')) {
       return res.status(503).json({
         error: message,
-        hint: 'Create frontend/.env.local with API_URL=http://localhost:8000 and run the Django backend.',
+        hint: 'Create frontend/.env.local with API_URL=http://localhost:7000 and run the Django backend.',
       });
     }
     return res.status(500).json({
       error: 'Backend request failed',
       detail: process.env.NODE_ENV === 'development' ? message : undefined,
+      hint: `¿El backend está corriendo en ${process.env.API_URL}?`,
     });
   }
 }

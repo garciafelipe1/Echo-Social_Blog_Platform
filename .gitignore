@@ -89,6 +89,12 @@ out/
 frontend/.next/
 frontend/out/
 
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
 # Build
 dist/
 build/

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.template.loader import render_to_string
 
 
@@ -9,4 +10,5 @@ def render_otp_email(otp_code: str, username: str) -> str:
         "otp_code": otp_code,
         "username": username,
         "year": datetime.now().year,
+        "site_name": getattr(settings, "SITE_NAME", "EF"),
     })

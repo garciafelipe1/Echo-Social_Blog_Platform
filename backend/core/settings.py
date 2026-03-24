@@ -1,6 +1,7 @@
 import os
 import sys
 import environ
+import dj_database_url
 from datetime import timedelta
 from pathlib import Path
 
@@ -11,7 +12,7 @@ env = environ.Env()
 _env_file = BASE_DIR / ".env"
 if _env_file.exists():
     environ.Env.read_env(env_file=_env_file)
-# En Docker las variables vienen de env_file en compose (raíz .env), no de este archivo
+# En producción (Railway, etc.) las variables vienen del entorno
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,12 +24,25 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+# ALLOWED_HOSTS: lista separada por comas. Railway: añade RAILWAY_PUBLIC_DOMAIN si existe
+_allowed = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+_railway = env("RAILWAY_PUBLIC_DOMAIN", default="")
+if _railway and _railway not in _allowed:
+    _allowed.append(_railway)
+ALLOWED_HOSTS = _allowed
 
-CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
+# CORS y CSRF: lista separada por comas. Si FRONTEND_URL está definida, se añade a CORS/CSRF
+CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST", default=["http://localhost:3000", "http://127.0.0.1:3000"])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localhost:3000", "http://127.0.0.1:3000"])
+_frontend = env("FRONTEND_URL", default="").rstrip("/")
+if _frontend and _frontend not in CORS_ORIGIN_WHITELIST:
+    CORS_ORIGIN_WHITELIST = list(CORS_ORIGIN_WHITELIST) + [_frontend]
+if _frontend and _frontend not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [_frontend]
 
 SITE_ID = 1
+# Nombre de la aplicación (emails, Site framework)
+SITE_NAME = env("SITE_NAME", default="EF")
 # Dominio para enlaces en emails (activación, reset password). Debe ser el frontend.
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
@@ -117,17 +131,20 @@ ASGI_APPLICATION = 'core.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env("DATABASE_NAME"),
-        'USER': env("DATABASE_USER"),
-        'PASSWORD': env("DATABASE_PASSWORD"),
-        'HOST': env("DATABASE_HOST"),
-        'PORT': env("DATABASE_PORT"),
+# Railway: usa DATABASE_URL. Local: usa DATABASE_NAME, USER, PASSWORD, HOST, PORT
+if env("DATABASE_URL", default=""):
+    DATABASES = {"default": dj_database_url.parse(env("DATABASE_URL"))}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DATABASE_NAME"),
+            "USER": env("DATABASE_USER"),
+            "PASSWORD": env("DATABASE_PASSWORD"),
+            "HOST": env("DATABASE_HOST"),
+            "PORT": env("DATABASE_PORT"),
+        }
     }
-}
 
 # Usar SQLite en memoria para tests (evita necesitar CREATE DATABASE en PostgreSQL)
 if 'test' in sys.argv:
@@ -215,7 +232,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Echo API",
+    "TITLE": "EF API",
     "DESCRIPTION": "Social blog platform API — posts, comments, likes, profiles, auth",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
@@ -327,37 +344,53 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-# En desarrollo: file backend (emails en backend/emails/). No imprime en terminal.
-# Con Docker+Mailpit: EMAIL_BACKEND=smtp, EMAIL_HOST=mailpit → ver en http://localhost:8025
-_default_email_backend = (
-    "django.core.mail.backends.filebased.EmailBackend"
-    if DEBUG
-    else "django.core.mail.backends.smtp.EmailBackend"
-)
-EMAIL_BACKEND = env("EMAIL_BACKEND", default=_default_email_backend)
-# En DEBUG: forzar file backend si tenías console (evita OTP en terminal)
-if DEBUG and EMAIL_BACKEND and "console" in EMAIL_BACKEND.lower():
-    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# ----- Email: Resend, Mailpit o file backend -----
+# Si RESEND_API_KEY está definido → usa Resend SMTP (producción)
+# Si no: en DEBUG usa file backend o Mailpit; en producción usa SMTP configurado
+RESEND_API_KEY = env("RESEND_API_KEY", default="").strip()
+USE_RESEND = bool(RESEND_API_KEY)
 
-if DEBUG:
-    # En desarrollo: file backend guarda emails en backend/emails/ (sin terminal)
-    # Con Docker: usa EMAIL_BACKEND=smtp y EMAIL_HOST=mailpit para ver en http://localhost:8025
-    if "filebased" in EMAIL_BACKEND:
-        EMAIL_FILE_PATH = env("EMAIL_FILE_PATH", default=str(BASE_DIR / "emails"))
-        os.makedirs(EMAIL_FILE_PATH, exist_ok=True)
-    else:
-        EMAIL_HOST = env("EMAIL_HOST", default="localhost")
-        EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
-        EMAIL_USE_TLS = False
-        EMAIL_USE_SSL = False
-    DEFAULT_FROM_EMAIL = "Echo Dev <noreply@localhost>"
+if USE_RESEND:
+    # Resend SMTP: https://resend.com/docs/send-with-smtp
+    # El dominio "from" debe estar verificado en Resend (resend.com/domains)
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.resend.com"
+    EMAIL_PORT = env.int("RESEND_SMTP_PORT", default=587)  # 587 (TLS) suele funcionar mejor que 465 en Windows
+    EMAIL_HOST_USER = "resend"
+    EMAIL_HOST_PASSWORD = RESEND_API_KEY
+    EMAIL_USE_TLS = EMAIL_PORT == 587
+    EMAIL_USE_SSL = EMAIL_PORT == 465
+    DEFAULT_FROM_EMAIL = env(
+        "RESEND_FROM_EMAIL",
+        default="EF <onboarding@resend.dev>",  # Dominio de prueba Resend
+    )
 else:
-    EMAIL_HOST = env("EMAIL_HOST")
-    EMAIL_PORT = env.int("EMAIL_PORT")
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-    DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Echo <noreply@echo.dev>")
+    _default_email_backend = (
+        "django.core.mail.backends.filebased.EmailBackend"
+        if DEBUG
+        else "django.core.mail.backends.smtp.EmailBackend"
+    )
+    EMAIL_BACKEND = env("EMAIL_BACKEND", default=_default_email_backend)
+    if DEBUG and EMAIL_BACKEND and "console" in EMAIL_BACKEND.lower():
+        EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+
+    if DEBUG:
+        if "filebased" in EMAIL_BACKEND:
+            EMAIL_FILE_PATH = env("EMAIL_FILE_PATH", default=str(BASE_DIR / "emails"))
+            os.makedirs(EMAIL_FILE_PATH, exist_ok=True)
+        else:
+            EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+            EMAIL_PORT = env.int("EMAIL_PORT", default=1025)
+            EMAIL_USE_TLS = False
+            EMAIL_USE_SSL = False
+        DEFAULT_FROM_EMAIL = "EF Dev <noreply@localhost>"
+    else:
+        EMAIL_HOST = env("EMAIL_HOST")
+        EMAIL_PORT = env.int("EMAIL_PORT")
+        EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+        EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+        EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+        DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="EF <noreply@ef.app>")
     
 
 MEDIA_URL = '/media/'

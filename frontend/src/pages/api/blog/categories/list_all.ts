@@ -7,19 +7,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  try {
-    const apiRes = await fetch(`${process.env.API_URL}/api/blog/categories/list/`, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+  const baseUrl = process.env.API_URL?.replace(/\/$/, '') || '';
+  if (!baseUrl) {
+    return res.status(503).json({
+      error: 'API_URL no configurada. Añade API_URL=http://localhost:7000 en frontend/.env.local',
     });
+  }
 
-    const data = await apiRes.json();
+  try {
+    const apiRes = await fetch(`${baseUrl}/api/blog/categories/list/`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    const contentType = apiRes.headers.get('content-type');
+    const data = contentType?.includes('application/json')
+      ? await apiRes.json()
+      : { error: 'Backend returned non-JSON' };
     return res.status(apiRes.status).json(data);
   } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Error de conexión';
     return res.status(500).json({
-      error: 'Something went wrong',
+      error: 'No se pudo conectar con el backend',
+      detail: process.env.NODE_ENV === 'development' ? msg : undefined,
     });
   }
 }
