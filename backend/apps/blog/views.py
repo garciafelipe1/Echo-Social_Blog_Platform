@@ -437,9 +437,6 @@ class CategoryListView(StandardAPIView):
             sorting=sorting,
         )
 
-        if not categories.exists():
-            raise NotFound(detail="No categories found.")
-
         serialized_categories = CategoryListSerializer(categories, many=True).data
 
         for category in categories:
