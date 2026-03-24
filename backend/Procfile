@@ -1,1 +1,1 @@
-web: python manage.py migrate --noinput && python manage.py seed_blog_demo --if-env && gunicorn core.wsgi --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 60 --access-logfile - --error-logfile -
+web: python manage.py migrate --noinput && python manage.py seed_blog_demo --if-env && python manage.py seed_social_demo --if-env && gunicorn core.wsgi --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 60 --access-logfile - --error-logfile -
