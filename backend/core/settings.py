@@ -396,6 +396,10 @@ else:
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# En Railway/Gunicorn no se sirven archivos media por defecto.
+# Para portfolio/demo se puede habilitar un servido simple desde Django (no recomendado para alto tráfico).
+SERVE_MEDIA = env.bool("SERVE_MEDIA", default=DEBUG)
+
 # Tests: evitar Redis (DummyCache) para no depender de Redis en local
 if 'test' in sys.argv:
     CACHES = {'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}

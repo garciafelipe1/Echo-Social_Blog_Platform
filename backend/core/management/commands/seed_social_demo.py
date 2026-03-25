@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 from django.utils.text import slugify
 
 from faker import Faker
@@ -137,7 +138,17 @@ class Command(BaseCommand):
                         "user": user,
                         "title": title[:240],
                         "description": fake.sentence(nb_words=14)[:250],
-                        "content": "<p>" + "</p><p>".join(fake.paragraphs(nb=3)) + "</p>",
+                        "content": (
+                            f"<h2>{fake.sentence(nb_words=5).rstrip('.')}</h2>"
+                            f"<p>{fake.paragraph(nb_sentences=4)}</p>"
+                            f"<p>{fake.paragraph(nb_sentences=5)}</p>"
+                            f"<ul>"
+                            f"<li>{fake.sentence(nb_words=8).rstrip('.')}</li>"
+                            f"<li>{fake.sentence(nb_words=8).rstrip('.')}</li>"
+                            f"<li>{fake.sentence(nb_words=8).rstrip('.')}</li>"
+                            f"</ul>"
+                            f"<p>{fake.paragraph(nb_sentences=3)}</p>"
+                        ),
                         "keywords": ",".join([slugify(w) for w in fake.words(nb=5)]),
                         "category": random.choice(categories),
                         "status": "published",
@@ -153,6 +164,13 @@ class Command(BaseCommand):
                     )
                     post.save()
                     created_posts += 1
+
+                # Hacerlos más "reales": fechas en el pasado (siempre)
+                if created:
+                    days_ago = random.randint(0, 120)
+                    created_at = timezone.now() - timezone.timedelta(days=days_ago, hours=random.randint(0, 23))
+                    # Campos: created_at (default), update_at (auto_now) no se setea fácil sin update()
+                    Post.objects.filter(pk=post.pk).update(created_at=created_at)
                 posts.append(post)
 
         follows_target = max(len(users) * 5, 100)
