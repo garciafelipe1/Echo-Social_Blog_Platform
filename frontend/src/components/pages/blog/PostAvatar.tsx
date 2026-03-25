@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import { mediaUrl } from '@/utils/mediaUrl';
+import FallbackImage from '@/components/shared/FallbackImage';
+import { avatarFallbackUrl, mediaUrl } from '@/utils/mediaUrl';
 
 interface Props {
   profilePicture?: string | null;
@@ -25,11 +25,12 @@ export default function PostAvatar({
 
   if (profilePicture) {
     return (
-      <Image
+      <FallbackImage
         width={64}
         height={64}
         alt={username}
         src={mediaUrl(profilePicture)}
+        fallbackSrc={avatarFallbackUrl(username)}
         className={`${s.container} shrink-0 rounded-full object-cover ${className}`}
       />
     );

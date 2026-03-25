@@ -36,6 +36,8 @@ const nextConfig = {
       { protocol: 'http', hostname: '127.0.0.1', port: '8004', pathname: '/media/**' },
       { protocol: 'http', hostname: '127.0.0.1', port: '7000', pathname: '/media/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '**' },
+      { protocol: 'https', hostname: 'ui-avatars.com', pathname: '**' },
+      { protocol: 'https', hostname: 'picsum.photos', pathname: '**' },
     ],
   },
 };

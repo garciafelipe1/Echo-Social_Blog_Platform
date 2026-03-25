@@ -13,7 +13,8 @@ import {
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import ShareButton from '@/components/shared/ShareButton';
 import { formatCompact } from '@/utils/formatNumber';
-import { mediaUrl } from '@/utils/mediaUrl';
+import { avatarFallbackUrl, mediaUrl, postImageFallbackUrl } from '@/utils/mediaUrl';
+import FallbackImage from '@/components/shared/FallbackImage';
 
 interface FeedPostCardProps {
   post: IPostsList;
@@ -48,11 +49,12 @@ export default function FeedPostCard({ post }: FeedPostCardProps) {
         {/* Avatar */}
         <Link href={userUrl} className="shrink-0 overflow-hidden rounded-full pt-0.5">
           {post?.user?.profile_picture ? (
-            <Image
+            <FallbackImage
               width={40}
               height={40}
               alt=""
               src={mediaUrl(post.user.profile_picture)}
+              fallbackSrc={avatarFallbackUrl(post?.user?.username)}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
@@ -93,11 +95,12 @@ export default function FeedPostCard({ post }: FeedPostCardProps) {
             {/* Image card */}
             {post?.thumbnail && (
               <div className="dark:border-dark-third mt-3 overflow-hidden rounded-2xl border border-gray-200">
-                <Image
+                <FallbackImage
                   width={510}
                   height={287}
                   alt={post?.title || ''}
                   src={mediaUrl(post.thumbnail)}
+                  fallbackSrc={postImageFallbackUrl(post?.slug || post?.title)}
                   className="h-auto w-full object-cover"
                   sizes="(max-width: 600px) 100vw, 510px"
                 />

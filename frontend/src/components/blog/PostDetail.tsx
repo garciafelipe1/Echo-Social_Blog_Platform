@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import moment from 'moment';
-import { mediaUrl } from '@/utils/mediaUrl';
+import { avatarFallbackUrl, mediaUrl, postImageFallbackUrl } from '@/utils/mediaUrl';
+import FallbackImage from '@/components/shared/FallbackImage';
 import useLike from '@/hooks/useLike';
 import useBookmark from '@/hooks/useBookmark';
 import ShareButton from '@/components/shared/ShareButton';
@@ -38,11 +39,12 @@ export default function PostDetail({ post }: Props) {
       <div className="mb-4 flex items-center gap-3">
         <Link href={`/@/${post.user?.username}/`} className="shrink-0">
           {post.user?.profile_picture ? (
-            <Image
+            <FallbackImage
               width={40}
               height={40}
               alt=""
               src={mediaUrl(post.user.profile_picture)}
+              fallbackSrc={avatarFallbackUrl(post.user?.username)}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
@@ -75,8 +77,9 @@ export default function PostDetail({ post }: Props) {
       {/* Thumbnail */}
       {post.thumbnail && (
         <div className="mb-4 overflow-hidden rounded-xl">
-          <Image
+          <FallbackImage
             src={mediaUrl(post.thumbnail)}
+            fallbackSrc={postImageFallbackUrl(post.slug || post.title)}
             alt={post.title}
             width={800}
             height={450}

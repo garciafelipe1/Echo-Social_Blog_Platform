@@ -13,7 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { formatCompact } from '@/utils/formatNumber';
-import { mediaUrl } from '@/utils/mediaUrl';
+import { avatarFallbackUrl, mediaUrl, postImageFallbackUrl } from '@/utils/mediaUrl';
+import FallbackImage from '@/components/shared/FallbackImage';
 
 interface ComponentProps {
   post: IPostsList;
@@ -37,11 +38,12 @@ export default function PostCard({ post }: ComponentProps) {
       <header className="flex items-center gap-3 px-4 py-3">
         <Link href={`/@/${post?.user?.username}/`} className="flex shrink-0 items-center gap-3">
           {post?.user?.profile_picture ? (
-            <Image
+            <FallbackImage
               width={36}
               height={36}
               alt=""
               src={mediaUrl(post.user.profile_picture)}
+              fallbackSrc={avatarFallbackUrl(post?.user?.username)}
               className="dark:ring-dark-third size-9 rounded-full object-cover ring-1 ring-gray-200"
             />
           ) : (
@@ -74,10 +76,11 @@ export default function PostCard({ post }: ComponentProps) {
       <Link href={postUrl} className="block">
         {post?.thumbnail ? (
           <div className="dark:bg-dark-second relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-            <Image
+            <FallbackImage
               fill
               alt={post?.title || 'Post'}
               src={mediaUrl(post.thumbnail)}
+              fallbackSrc={postImageFallbackUrl(post?.slug || post?.title)}
               className="object-cover"
               sizes="(max-width: 600px) 100vw, 600px"
             />
